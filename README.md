@@ -44,6 +44,46 @@ For development with hot-reload:
 npm run dev
 ```
 
+## Usage with VS Code
+
+### Option 1: User Settings (Global)
+
+Add this to your VS Code User Settings (`settings.json`):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "fluentui-icons": {
+        "url": "http://localhost:3001/mcp"
+      }
+    }
+  }
+}
+```
+
+### Option 2: Workspace Settings (Per Project)
+
+Create or edit `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "servers": {
+    "fluentui-icons": {
+      "url": "http://localhost:3001/mcp"
+    }
+  }
+}
+```
+
+### Using the App
+
+1. Start the server: `npm run serve`
+2. Open GitHub Copilot Chat in VS Code
+3. Ask Copilot to search for icons (e.g., "Find me a calendar icon")
+4. The MCP App UI will appear with search results
+5. Click an icon to see details, copy JSX, or add the import to your file
+
 ## Usage with Claude Desktop
 
 Add this to your Claude Desktop configuration file:
