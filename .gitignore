@@ -1,0 +1,5 @@
+node_modules/
+dist/
+temp-mcp-reference/
+*.log
+.DS_Store
