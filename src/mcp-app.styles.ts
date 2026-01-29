@@ -8,7 +8,6 @@ export const useAppStyles = makeStyles({
   app: {
     fontFamily: tokens.fontFamilyBase,
     ...shorthands.padding("12px"),
-    minHeight: "100vh",
     boxSizing: "border-box",
     backgroundColor: tokens.colorNeutralBackground1,
     color: tokens.colorNeutralForeground1,

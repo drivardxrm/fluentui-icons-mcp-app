@@ -546,6 +546,33 @@ const semanticIconMapping: Record<string, string[]> = {
   bicycle: ["Bicycle", "Vehicle"],
   
   // -------------------------------------------------------------------------
+  // SPORTS & ACTIVITY
+  // -------------------------------------------------------------------------
+  run: ["Run", "PersonRunning", "Sport"],
+  running: ["Run", "PersonRunning", "Sport"],
+  jog: ["Run", "PersonRunning"],
+  jogging: ["Run", "PersonRunning"],
+  sprint: ["Run", "PersonRunning"],
+  walk: ["Walk", "PersonWalking", "Run", "PersonRunning"],
+  walking: ["Walk", "PersonWalking", "Run", "PersonRunning"],
+  shoe: ["Run", "PersonRunning", "Walk", "PersonWalking"],
+  shoes: ["Run", "PersonRunning", "Walk", "PersonWalking"],
+  sneaker: ["Run", "PersonRunning", "Sport"],
+  sneakers: ["Run", "PersonRunning", "Sport"],
+  boot: ["Run", "PersonRunning", "Walk", "PersonWalking"],
+  boots: ["Run", "PersonRunning", "Walk", "PersonWalking"],
+  foot: ["Run", "PersonRunning", "Walk", "PersonWalking"],
+  feet: ["Run", "PersonRunning", "Walk", "PersonWalking"],
+  exercise: ["Run", "PersonRunning", "Sport", "Heart"],
+  workout: ["Run", "PersonRunning", "Sport", "Dumbbell"],
+  fitness: ["Run", "PersonRunning", "Sport", "Heart"],
+  sport: ["Run", "PersonRunning", "Sport", "Trophy"],
+  sports: ["Run", "PersonRunning", "Sport", "Trophy"],
+  athlete: ["Run", "PersonRunning", "Sport"],
+  marathon: ["Run", "PersonRunning"],
+  race: ["Run", "PersonRunning", "Trophy", "Flag"],
+  
+  // -------------------------------------------------------------------------
   // COLORS & PAINTING
   // -------------------------------------------------------------------------
   color: ["Color", "ColorFill", "ColorLine", "ColorBackground", "PaintBrush", "PaintBucket", "Palette", "Eyedropper"],
