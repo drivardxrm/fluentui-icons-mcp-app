@@ -1,6 +1,7 @@
 import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
+import Fuse from "fuse.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
@@ -364,10 +365,17 @@ const semanticIconMapping: Record<string, string[]> = {
   water: ["Drop", "Water", "Rain"],
   
   // Food & Drink
-  food: ["Food", "Restaurant", "Bowl", "Pizza"],
+  food: ["Food", "Restaurant", "Bowl", "Pizza", "Apple", "Egg"],
+  fruit: ["Apple", "Food", "Leaf"],
+  apple: ["Apple", "Food"],
+  egg: ["Egg", "Food"],
+  pizza: ["Pizza", "Food"],
   drink: ["Drink", "Coffee", "Cup"],
   coffee: ["Coffee", "Drink", "Cup"],
+  tea: ["Coffee", "Drink", "Cup"],
   restaurant: ["Food", "Restaurant", "Fork"],
+  eat: ["Food", "Restaurant", "Bowl"],
+  meal: ["Food", "Restaurant", "Bowl"],
   
   // Transportation
   car: ["Vehicle", "Car", "Automobile"],
@@ -453,156 +461,99 @@ const semanticIconMapping: Record<string, string[]> = {
   construct: ["Hammer", "Wrench", "Building"],
 };
 
-/**
- * Normalize a word for fuzzy matching - removes common suffixes
- */
-function normalizeWord(word: string): string {
-  // Remove common plural/verb endings for fuzzy matching
-  return word
-    .replace(/ing$/, '')
-    .replace(/ed$/, '')
-    .replace(/s$/, '')
-    .replace(/tion$/, 't')
-    .replace(/ly$/, '');
+// Prepare icon data for Fuse.js search
+interface IconSearchItem {
+  name: string;
+  baseName: string;
+  variant: string;
 }
 
-/**
- * Check if two words are similar enough (fuzzy match)
- */
-function fuzzyMatch(word1: string, word2: string): boolean {
-  if (word1 === word2) return true;
-  if (word1.length < 3 || word2.length < 3) return word1 === word2;
-  
-  const norm1 = normalizeWord(word1);
-  const norm2 = normalizeWord(word2);
-  
-  // Normalized match
-  if (norm1 === norm2) return true;
-  
-  // First 4+ characters match exactly (prefix matching for longer words)
-  const minLen = Math.min(norm1.length, norm2.length);
-  if (minLen >= 4 && norm1.substring(0, 4) === norm2.substring(0, 4)) {
-    return true;
-  }
-  
-  return false;
-}
+const iconSearchItems: IconSearchItem[] = (FLUENT_ICON_NAMES as unknown as string[]).map((name) => {
+  const { baseName, variant } = parseIconName(name);
+  return { name, baseName, variant };
+});
+
+// Initialize Fuse.js for fuzzy search on icon names
+const iconFuse = new Fuse(iconSearchItems, {
+  keys: ["baseName", "name"],
+  threshold: 0.3, // 0 = exact match, 1 = match anything (0.3 is a good balance)
+  distance: 100,
+  includeScore: true,
+  minMatchCharLength: 2,
+  ignoreLocation: true, // Search anywhere in the string
+});
+
+// Initialize Fuse.js for semantic key matching
+const semanticKeys = Object.keys(semanticIconMapping);
+const semanticFuse = new Fuse(semanticKeys, {
+  threshold: 0.3,
+  distance: 50,
+  includeScore: true,
+  minMatchCharLength: 2,
+});
 
 /**
  * Search for icons matching a query - supports both name matching and semantic/intent-based search
  */
 function searchIcons(query: string, maxResults: number = 20): IconResult[] {
-  const allIcons = getFluentIconNames();
   const queryLower = query.toLowerCase().trim();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
   
-  // Build a set of semantic patterns to search for based on the query
-  const semanticPatterns: Map<string, number> = new Map(); // pattern -> priority
+  // Collect all matching icons with scores
+  const iconScores = new Map<string, number>();
   
-  // Check each query word against semantic mappings
+  // 1. Direct fuzzy search on icon names
+  const directResults = iconFuse.search(queryLower, { limit: maxResults * 2 });
+  for (const result of directResults) {
+    const score = 100 - (result.score || 0) * 100; // Convert to 0-100 scale (higher is better)
+    iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
+  }
+  
+  // 2. Semantic/intent-based search
   for (const word of queryWords) {
-    // Direct semantic mapping lookup (highest priority)
+    // Direct semantic key match
     if (semanticIconMapping[word]) {
       for (const pattern of semanticIconMapping[word]) {
-        semanticPatterns.set(pattern.toLowerCase(), Math.max(semanticPatterns.get(pattern.toLowerCase()) || 0, 3));
-      }
-    }
-    
-    // Fuzzy match on semantic keys
-    for (const [key, patterns] of Object.entries(semanticIconMapping)) {
-      if (fuzzyMatch(word, key)) {
-        for (const pattern of patterns) {
-          const patternLower = pattern.toLowerCase();
-          semanticPatterns.set(patternLower, Math.max(semanticPatterns.get(patternLower) || 0, 2));
+        // Search for icons matching this semantic pattern
+        const semanticResults = iconFuse.search(pattern, { limit: 10 });
+        for (const result of semanticResults) {
+          const score = 70 - (result.score || 0) * 50; // Semantic matches score slightly lower
+          iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
         }
       }
     }
     
-    // Partial matches in semantic keys (key contains word or word contains key)
-    for (const [key, patterns] of Object.entries(semanticIconMapping)) {
-      if (key.length >= 3 && word.length >= 3 && (key.includes(word) || word.includes(key))) {
+    // Fuzzy match on semantic keys
+    const fuzzySemanticMatches = semanticFuse.search(word, { limit: 5 });
+    for (const semanticMatch of fuzzySemanticMatches) {
+      const semanticKey = semanticMatch.item;
+      const patterns = semanticIconMapping[semanticKey];
+      if (patterns) {
         for (const pattern of patterns) {
-          const patternLower = pattern.toLowerCase();
-          if (!semanticPatterns.has(patternLower)) {
-            semanticPatterns.set(patternLower, 1);
+          const semanticResults = iconFuse.search(pattern, { limit: 8 });
+          for (const result of semanticResults) {
+            // Lower score for fuzzy semantic matches
+            const score = 50 - (result.score || 0) * 30 - (semanticMatch.score || 0) * 20;
+            iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
           }
         }
       }
     }
   }
   
-  // Score-based search
-  const scored = allIcons
-    .map((name) => {
-      const nameLower = name.toLowerCase();
-      const { baseName } = parseIconName(name);
-      const baseNameLower = baseName.toLowerCase();
-      
-      let score = 0;
-      let bonusScore = 0;
-      
-      // Exact base name match (highest priority)
-      if (baseNameLower === queryLower) {
-        score = 100;
-      }
-      // Base name starts with query
-      else if (baseNameLower.startsWith(queryLower)) {
-        score = 80;
-      }
-      // Base name contains query
-      else if (baseNameLower.includes(queryLower)) {
-        score = 60;
-      }
-      // Full name contains query
-      else if (nameLower.includes(queryLower)) {
-        score = 40;
-      }
-      // Individual words match (either direction)
-      else {
-        for (const w of queryWords) {
-          if (baseNameLower.includes(w)) {
-            score = Math.max(score, 25);
-          } else if (w.length >= 4 && baseNameLower.includes(w.substring(0, 4))) {
-            // Prefix match for longer words
-            score = Math.max(score, 15);
-          }
-        }
-      }
-      
-      // Semantic/Intent-based matching - ALWAYS apply (additive to direct matches)
-      if (semanticPatterns.size > 0) {
-        for (const [pattern, priority] of semanticPatterns) {
-          if (baseNameLower === pattern) {
-            bonusScore = Math.max(bonusScore, 70 * priority / 3); // Exact semantic match
-          } else if (baseNameLower.startsWith(pattern)) {
-            bonusScore = Math.max(bonusScore, 55 * priority / 3); // Semantic starts with
-          } else if (baseNameLower.includes(pattern)) {
-            bonusScore = Math.max(bonusScore, 45 * priority / 3); // Semantic contains
-          } else if (pattern.length >= 4 && baseNameLower.includes(pattern.substring(0, 4))) {
-            bonusScore = Math.max(bonusScore, 30 * priority / 3); // Semantic prefix
-          }
-        }
-      }
-      
-      // Combine scores - if semantic matched but direct didn't, use semantic; otherwise add bonus
-      if (score === 0 && bonusScore > 0) {
-        score = bonusScore;
-      } else if (score > 0 && bonusScore > 0) {
-        score += bonusScore * 0.3; // Boost direct matches that also match semantically
-      }
-      
+  // Sort by score and take top results
+  const sortedIcons = [...iconScores.entries()]
+    .sort((a, b) => {
+      // First by score
+      if (b[1] !== a[1]) return b[1] - a[1];
       // Prefer Regular variant
-      if (score > 0) {
-        if (name.endsWith("Regular")) score += 1;
-      }
-      
-      return { name, score };
+      const aRegular = a[0].endsWith("Regular") ? 1 : 0;
+      const bRegular = b[0].endsWith("Regular") ? 1 : 0;
+      return bRegular - aRegular;
     })
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score)
     .slice(0, maxResults);
   
-  return scored.map(({ name }) => {
+  return sortedIcons.map(([name]) => {
     const { baseName, variant } = parseIconName(name);
     const availableSizes = getIconSizes(name);
     return {
