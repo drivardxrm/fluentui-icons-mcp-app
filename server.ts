@@ -471,7 +471,7 @@ const iconSearchItems: IconSearchItem[] = (FLUENT_ICON_NAMES as unknown as strin
 // Initialize Fuse.js for fuzzy search on icon names
 const iconFuse = new Fuse(iconSearchItems, {
   keys: ["baseName", "name"],
-  threshold: 0.3, // 0 = exact match, 1 = match anything (0.3 is a good balance)
+  threshold: 0.1, // 0 = exact match, 1 = match anything (0.1 is strict)
   distance: 100,
   includeScore: true,
   minMatchCharLength: 2,
@@ -481,7 +481,7 @@ const iconFuse = new Fuse(iconSearchItems, {
 // Initialize Fuse.js for semantic key matching
 const semanticKeys = Object.keys(semanticIconMapping);
 const semanticFuse = new Fuse(semanticKeys, {
-  threshold: 0.3,
+  threshold: 0.1,
   distance: 50,
   includeScore: true,
   minMatchCharLength: 2,

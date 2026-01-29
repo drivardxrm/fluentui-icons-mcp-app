@@ -11,6 +11,7 @@ import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import { useAppStyles } from "./mcp-app.styles";
+import mcpLogo from "./assets/mcp.png";
 
 // Type for icon result from the server
 interface IconResult {
@@ -98,7 +99,7 @@ function FluentUIIconsApp({ isDarkMode, onToggleTheme }: FluentUIIconsAppProps) 
   const [error, setError] = useState<string | null>(null);
 
   const { app, error: connectionError } = useApp({
-    appInfo: { name: "Fluent UI Icons Explorer", version: "1.0.0" },
+    appInfo: { name: "Fluent UI Icons - MCP App", version: "1.0.0" },
     capabilities: {},
     onAppCreated: (app) => {
       app.onteardown = async () => {
@@ -466,7 +467,10 @@ function FluentUIIconsAppInner({
         {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerRow}>
-            <h1 className={styles.title}>Fluent UI Icons</h1>
+            <div className={styles.titleContainer}>
+              <img src={mcpLogo} alt="MCP" className={styles.mcpLogo} />
+              <h1 className={styles.title}>Fluent UI Icons - MCP App</h1>
+            </div>
             <Tooltip content={isDarkMode ? "Dark mode" : "Light mode"} relationship="label">
               <div className={styles.themeToggleContainer}>
                 <WeatherSunny16Filled className={styles.themeIcon} />

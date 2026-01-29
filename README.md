@@ -1,13 +1,18 @@
-# Fluent UI MCP App
+# Fluent UI Icons - MCP App
 
 An MCP App for exploring and searching **Fluent UI React V9 icons** from `@fluentui/react-icons`.
 
+![MCP App](src/assets/mcp.png)
+
 ## Features
 
-- 🔍 **Search Icons** - Natural language search for Fluent UI icons (e.g., "add", "calendar", "arrow left")
+- 🔍 **Fuzzy Search** - Natural language search with semantic matching and WordNet synonyms
+- 📏 **Size Variants** - Toggle between unsized and pixel-specific icon sizes (10, 12, 16, 20, 24, 28, 32, 48)
 - 👀 **Visual Preview** - See icons rendered in a grid with live previews
 - 📋 **Copy Code** - Get ready-to-use JSX and import statements
-- 🎨 **Theme Integration** - Adapts to the host application's theme
+- 📥 **Add Import** - Insert import statements directly into your code via Copilot
+- 🌙 **Dark/Light Mode** - Toggle between themes with persistent preference
+- 🎨 **Fluent UI Styling** - Built with Griffel and Fluent UI tokens
 
 ## Quick Start
 
@@ -94,25 +99,36 @@ Search for Fluent UI icons by name or description.
 ## Project Structure
 
 ```
-fluentui-mcp-app/
-├── server.ts          # MCP server with tool & resource registration
-├── main.ts            # Express HTTP server setup
-├── mcp-app.html       # HTML entry point
+fluentui-icons-mcp-app/
+├── server.ts              # MCP server with tool & resource registration
+├── main.ts                # Express HTTP server setup
+├── mcp-app.html           # HTML entry point
 ├── src/
-│   ├── mcp-app.tsx    # React UI component
-│   └── mcp-app.module.css # Styles
+│   ├── mcp-app.tsx        # React UI component
+│   ├── mcp-app.styles.ts  # Griffel styles with Fluent UI tokens
+│   ├── icon-registry.tsx  # 5,684 explicit icon imports
+│   ├── icon-names.ts      # Static list of unsized icon names
+│   ├── icon-sizes.ts      # Mapping of base names to available sizes
+│   ├── assets/
+│   │   └── mcp.png        # MCP logo
+│   └── vite-env.d.ts      # TypeScript declarations
+├── scripts/
+│   ├── generate-icon-list.ts   # Generate icon names
+│   └── generate-icon-sizes.ts  # Generate size mappings
 ├── package.json
 ├── tsconfig.json
 ├── tsconfig.server.json
-└── vite.config.ts     # Vite bundler config with singlefile plugin
+└── vite.config.ts         # Vite bundler config with singlefile plugin
 ```
 
 ## Tech Stack
 
 - **MCP SDK**: `@modelcontextprotocol/ext-apps`, `@modelcontextprotocol/sdk`
-- **UI Framework**: React 18
-- **Icons**: `@fluentui/react-icons` (~2000+ icons)
-- **Bundler**: Vite with `vite-plugin-singlefile`
+- **UI Framework**: React 18 with Fluent UI React Components v9
+- **Styling**: Griffel (CSS-in-JS) with Fluent UI tokens
+- **Icons**: `@fluentui/react-icons` (5,684 unsized icons)
+- **Search**: Fuse.js for fuzzy matching, WordNet for synonyms
+- **Bundler**: Vite with `vite-plugin-singlefile` (~3.9MB single HTML)
 - **Server**: Express with SSE transport
 
 ## License

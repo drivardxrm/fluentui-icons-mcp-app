@@ -34,6 +34,18 @@ export const useAppStyles = makeStyles({
     justifyContent: "space-between",
   },
 
+  titleContainer: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("12px"),
+  },
+
+  mcpLogo: {
+    width: "40px",
+    height: "40px",
+    objectFit: "contain",
+  },
+
   title: {
     fontSize: tokens.fontSizeHero800,
     fontWeight: tokens.fontWeightSemibold,
