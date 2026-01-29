@@ -529,11 +529,60 @@ async function searchIcons(query: string, maxResults: number = 20): Promise<Icon
   // Collect all matching icons with scores
   const iconScores = new Map<string, number>();
   
+  // Helper to check if icon name contains any query word as a substring (case-insensitive)
+  // Returns a score: higher for word-boundary matches, lower for embedded matches
+  const getSubstringMatchScore = (iconName: string): number => {
+    const nameLower = iconName.toLowerCase();
+    let bestScore = 0;
+    
+    for (const word of queryWords) {
+      const idx = nameLower.indexOf(word);
+      if (idx === -1) continue;
+      
+      // Check if it's at a word boundary (start of name or after uppercase transition)
+      // For PascalCase names like "DrinkBeer", we want "beer" to match at position where 'B' starts
+      const beforeChar = idx > 0 ? iconName[idx - 1] : '';
+      const matchChar = iconName[idx];
+      
+      // Word boundary: start of string, or previous char is lowercase and current is uppercase
+      const isWordBoundary = idx === 0 || 
+        (beforeChar === beforeChar.toLowerCase() && matchChar === matchChar.toUpperCase()) ||
+        (beforeChar.toUpperCase() === beforeChar && /[A-Z]/.test(beforeChar));
+      
+      if (isWordBoundary) {
+        bestScore = Math.max(bestScore, 250); // High score for word-boundary match
+      } else {
+        bestScore = Math.max(bestScore, 150); // Lower score for embedded match
+      }
+    }
+    
+    return bestScore;
+  };
+  
+  // 0. FIRST PASS: Direct substring matching (highest priority)
+  // This ensures icons containing the exact search term always appear first
+  console.log(`[DEBUG] searchIcons called with query: "${query}", queryWords: [${queryWords.join(", ")}]`);
+  let exactMatchCount = 0;
+  for (const item of iconSearchItems) {
+    const score = getSubstringMatchScore(item.name);
+    if (score > 0) {
+      iconScores.set(item.name, score);
+      exactMatchCount++;
+    }
+  }
+  console.log(`[DEBUG] Found ${exactMatchCount} exact substring matches`);
+  
   // 1. Direct fuzzy search on icon names
   const directResults = iconFuse.search(queryLower, { limit: maxResults * 2 });
   for (const result of directResults) {
-    const score = 100 - (result.score || 0) * 100; // Convert to 0-100 scale (higher is better)
-    iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
+    // Base score from fuzzy match (0-100, higher is better)
+    let score = 100 - (result.score || 0) * 100;
+    
+    // Only update if not already set by exact match (which has higher score)
+    const existingScore = iconScores.get(result.item.name) || 0;
+    if (score > existingScore) {
+      iconScores.set(result.item.name, score);
+    }
   }
   
   // 2. Semantic/intent-based search (custom mappings first)
@@ -608,6 +657,8 @@ async function searchIcons(query: string, maxResults: number = 20): Promise<Icon
       return bRegular - aRegular;
     })
     .slice(0, maxResults);
+  
+  console.log(`[DEBUG] Top 5 results with scores:`, sortedIcons.slice(0, 5).map(([name, score]) => `${name}: ${score}`));
   
   return sortedIcons.map(([name]) => {
     const { baseName, variant } = parseIconName(name);
