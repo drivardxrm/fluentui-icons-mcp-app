@@ -220,9 +220,11 @@ interface IconCardProps {
   controlledSize?: string | null;
   /** Callback when size changes (used when selected) */
   onSizeChange?: (size: string | null) => void;
+  /** Callback to add import statement to file */
+  onAddImport?: (importStatement: string) => void;
 }
 
-function IconCard({ icon, isSelected, onSelect, controlledSize, onSizeChange }: IconCardProps) {
+function IconCard({ icon, isSelected, onSelect, controlledSize, onSizeChange, onAddImport }: IconCardProps) {
   const styles = useAppStyles();
   const [internalSize, setInternalSize] = useState<string | null>(null);
   
@@ -282,24 +284,47 @@ function IconCard({ icon, isSelected, onSelect, controlledSize, onSizeChange }: 
     navigator.clipboard.writeText(jsxElement);
   }, [displayIconName]);
 
+  const handleAddImportClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddImport) {
+      const importStatement = `import { ${displayIconName} } from "@fluentui/react-icons";`;
+      onAddImport(importStatement);
+    }
+  }, [displayIconName, onAddImport]);
+
   return (
     <div
       className={mergeClasses(styles.iconCard, isSelected && styles.iconCardSelected)}
       onClick={handleCardClick}
     >
-      {/* Copy button on selected card */}
+      {/* Action buttons on selected card */}
       {isSelected && (
-        <Tooltip content="Copy JSX" relationship="label">
-          <Button
-            appearance="subtle"
-            size="small"
-            icon={<Code16Regular />}
-            onClick={handleCopyClick}
-            className={styles.iconCardCopyButton}
-          >
-            Copy
-          </Button>
-        </Tooltip>
+        <div className={styles.iconCardActionButtons}>
+          {onAddImport && (
+            <Tooltip content="Add import to file" relationship="label">
+              <Button
+                appearance="subtle"
+                size="small"
+                icon={<DocumentAdd16Regular />}
+                onClick={handleAddImportClick}
+                className={styles.iconCardCopyButton}
+              >
+                Import
+              </Button>
+            </Tooltip>
+          )}
+          <Tooltip content="Copy JSX" relationship="label">
+            <Button
+              appearance="subtle"
+              size="small"
+              icon={<Code16Regular />}
+              onClick={handleCopyClick}
+              className={styles.iconCardCopyButton}
+            >
+              Copy
+            </Button>
+          </Tooltip>
+        </div>
       )}
       <div className={styles.iconPreview}>
         {IconComponent ? <IconComponent style={{ fontSize: `${iconSizePx}px` }} /> : "?"}
@@ -498,6 +523,7 @@ function FluentUIIconsAppInner({
                 }}
                 controlledSize={isCardSelected ? selectedIconSize : undefined}
                 onSizeChange={isCardSelected ? setSelectedIconSize : undefined}
+                onAddImport={addImportToFile}
               />
             );
           })}

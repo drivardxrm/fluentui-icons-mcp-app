@@ -180,10 +180,15 @@ export const useAppStyles = makeStyles({
     position: "relative",
   },
 
-  iconCardCopyButton: {
+  iconCardActionButtons: {
     position: "absolute",
     top: "4px",
     right: "4px",
+    display: "flex",
+    gap: "2px",
+  },
+
+  iconCardCopyButton: {
     fontSize: tokens.fontSizeBase100,
   },
 
