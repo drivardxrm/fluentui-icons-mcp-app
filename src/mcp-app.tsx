@@ -6,7 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { Search24Regular } from "@fluentui/react-icons";
-import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton } from "@fluentui/react-components";
+import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider } from "@fluentui/react-components";
 import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
@@ -253,7 +253,6 @@ function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
         {IconComponent ? <IconComponent style={{ fontSize: `${iconSizePx}px` }} /> : "?"}
       </div>
       <div className={styles.iconName}>{displayIconName}</div>
-      <div className={styles.iconVariant}>{icon.category}</div>
       
       {/* Size Toggle Buttons */}
       {sizeOptions.length > 1 && (
@@ -354,56 +353,57 @@ function FluentUIIconsAppInner({
         paddingLeft: hostContext?.safeAreaInsets?.left,
       }}
     >
-      {/* Header */}
-      <header className={styles.header}>
-        <h1 className={styles.title}>Fluent UI Icons</h1>
-        <p className={styles.subtitle}>
-          Search and explore @fluentui/react-icons for your React projects
-        </p>
-      </header>
+      {/* Sticky Header Section */}
+      <div className={styles.stickyHeader}>
+        {/* Header */}
+        <header className={styles.header}>
+          <h1 className={styles.title}>Fluent UI Icons</h1>
+          <p className={styles.subtitle}>
+            Search and explore @fluentui/react-icons for your React projects
+          </p>
+        </header>
 
-      {/* Search Box */}
-      <div className={styles.searchBox}>
-        <input
-          type="text"
-          className={styles.searchInput}
-          placeholder="Search icons (e.g., 'add', 'calendar', 'arrow')"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={isSearching}
-        />
-        <button
-          className={styles.searchButton}
-          onClick={handleSearch}
-          disabled={isSearching || !searchQuery.trim()}
-        >
-          {isSearching ? "Searching..." : "Search"}
-        </button>
-      </div>
-
-      {/* Error State */}
-      {error && <div className={styles.error}>{error}</div>}
-
-      {/* Results Info */}
-      {displayData && displayData.icons.length > 0 && (
-        <div className={styles.resultsInfo}>
-          Found {displayData.totalCount} icons matching "{displayData.query}"
+        {/* Search Box */}
+        <div className={styles.searchBox}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="Search icons (e.g., 'add', 'calendar', 'arrow')"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isSearching}
+          />
+          <button
+            className={styles.searchButton}
+            onClick={handleSearch}
+            disabled={isSearching || !searchQuery.trim()}
+          >
+            {isSearching ? "Searching..." : "Search"}
+          </button>
         </div>
+
+        {/* Error State */}
+        {error && <div className={styles.error}>{error}</div>}
+
+      {/* Results Divider */}
+      {displayData && displayData.icons.length > 0 && (
+        <Divider className={styles.resultsDivider}>Found {displayData.totalCount} icons matching "{displayData.query}"</Divider>
       )}
+      </div>
 
       {/* Icons Grid */}
       {displayData && displayData.icons.length > 0 ? (
         <div className={styles.iconsGrid}>
           {displayData.icons.map((icon) => (
-            <IconCard
-              key={icon.name}
-              icon={icon}
-              isSelected={selectedIcon?.name === icon.name || 
-                Boolean(selectedIcon && icon.name.includes(selectedIcon.name.replace(/\d+/, '')))}
-              onSelect={(iconWithSize) => setSelectedIcon(iconWithSize)}
-            />
-          ))}
+              <IconCard
+                key={icon.name}
+                icon={icon}
+                isSelected={selectedIcon?.name === icon.name || 
+                  Boolean(selectedIcon && icon.name.includes(selectedIcon.name.replace(/\d+/, '')))}
+                onSelect={(iconWithSize) => setSelectedIcon(iconWithSize)}
+              />
+            ))}
         </div>
       ) : displayData ? (
         <div className={styles.emptyState}>
