@@ -7,7 +7,7 @@ import { makeStyles, shorthands, tokens } from "@fluentui/react-components";
 export const useAppStyles = makeStyles({
   app: {
     fontFamily: tokens.fontFamilyBase,
-    ...shorthands.padding("16px"),
+    ...shorthands.padding("12px"),
     minHeight: "100vh",
     boxSizing: "border-box",
     backgroundColor: tokens.colorNeutralBackground1,
@@ -15,7 +15,7 @@ export const useAppStyles = makeStyles({
   },
 
   header: {
-    marginBottom: "20px",
+    marginBottom: "12px",
   },
 
   headerRow: {
@@ -27,19 +27,19 @@ export const useAppStyles = makeStyles({
   titleContainer: {
     display: "flex",
     alignItems: "center",
-    ...shorthands.gap("12px"),
+    ...shorthands.gap("8px"),
   },
 
   mcpLogo: {
-    width: "40px",
-    height: "40px",
+    width: "32px",
+    height: "32px",
     objectFit: "contain",
   },
 
   title: {
-    fontSize: tokens.fontSizeHero800,
+    fontSize: tokens.fontSizeHero700,
     fontWeight: tokens.fontWeightSemibold,
-    ...shorthands.margin("0", "0", "8px", "0"),
+    ...shorthands.margin("0", "0", "4px", "0"),
     color: tokens.colorNeutralForeground1,
   },
 
@@ -59,7 +59,7 @@ export const useAppStyles = makeStyles({
   },
 
   subtitle: {
-    fontSize: tokens.fontSizeBase300,
+    fontSize: tokens.fontSizeBase200,
     color: tokens.colorNeutralForeground2,
     ...shorthands.margin("0"),
   },
@@ -67,20 +67,20 @@ export const useAppStyles = makeStyles({
   searchBox: {
     display: "flex",
     alignItems: "center",
-    ...shorthands.gap("16px"),
+    ...shorthands.gap("12px"),
     flexGrow: 1,
   },
 
   searchInput: {
     flexGrow: 1,
-    minWidth: "200px",
+    minWidth: "180px",
   },
 
   thresholdContainer: {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
-    minWidth: "140px",
+    minWidth: "120px",
   },
 
   thresholdLabel: {
@@ -108,27 +108,26 @@ export const useAppStyles = makeStyles({
 
   iconsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-    ...shorthands.gap("12px"),
+    gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+    ...shorthands.gap("6px"),
   },
 
   iconCard: {
     backgroundColor: tokens.colorNeutralBackground2,
     ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderRadius(tokens.borderRadiusLarge),
-    ...shorthands.padding("16px"),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.padding("6px"),
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     cursor: "pointer",
     transitionProperty: "all",
-    transitionDuration: "0.15s",
+    transitionDuration: "0.1s",
     transitionTimingFunction: "ease",
-    position: "relative", // Required for absolute positioned badge
+    position: "relative",
     ":hover": {
       ...shorthands.borderColor(tokens.colorBrandStroke1),
-      transform: "translateY(-2px)",
-      boxShadow: tokens.shadow8,
+      boxShadow: tokens.shadow4,
     },
   },
 
@@ -139,11 +138,12 @@ export const useAppStyles = makeStyles({
 
   scoreBadge: {
     position: "absolute",
-    top: "4px",
-    left: "4px",
+    top: "2px",
+    left: "2px",
     cursor: "help",
     fontWeight: 600,
-    minWidth: "24px",
+    minWidth: "18px",
+    fontSize: "9px",
   },
 
   // Score badge color variants - theme-aware colors with clear visual distinction
@@ -173,82 +173,89 @@ export const useAppStyles = makeStyles({
 
   iconCardActionButtons: {
     position: "absolute",
-    top: "4px",
-    right: "4px",
+    top: "2px",
+    right: "2px",
     display: "flex",
-    gap: "2px",
+    gap: "0px",
   },
 
   iconCardCopyButton: {
-    fontSize: tokens.fontSizeBase100,
+    fontSize: "9px",
+    minWidth: "18px",
+    height: "18px",
+    ...shorthands.padding("0"),
   },
 
   iconPreview: {
-    minHeight: "48px",
+    minHeight: "28px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: "12px",
+    marginBottom: "2px",
+    marginTop: "10px",
     color: tokens.colorNeutralForeground1,
-    transitionProperty: "font-size",
-    transitionDuration: "0.15s",
-    transitionTimingFunction: "ease",
   },
 
   iconName: {
-    fontSize: tokens.fontSizeBase200,
+    fontSize: "9px",
     fontWeight: tokens.fontWeightMedium,
     textAlign: "center",
     wordBreak: "break-word",
-    color: tokens.colorNeutralForeground1,
+    color: tokens.colorNeutralForeground2,
+    lineHeight: "1.2",
+    maxHeight: "2.4em",
+    overflow: "hidden",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
   },
 
   sizeToggleGroup: {
     display: "flex",
     flexWrap: "wrap",
-    ...shorthands.gap("4px"),
-    marginTop: "12px",
-    paddingTop: "12px",
+    ...shorthands.gap("2px"),
+    marginTop: "4px",
+    paddingTop: "4px",
     ...shorthands.borderTop("1px", "solid", tokens.colorNeutralStroke2),
     justifyContent: "center",
   },
 
   sizeToggleButton: {
-    minWidth: "24px !important" as "24px",
-    maxWidth: "28px",
-    ...shorthands.padding("0", "4px"),
-    fontSize: "10px",
+    minWidth: "18px !important" as "18px",
+    maxWidth: "22px",
+    ...shorthands.padding("0", "2px"),
+    fontSize: "8px",
     fontFamily: tokens.fontFamilyMonospace,
-    height: "20px !important" as "20px",
+    height: "14px !important" as "14px",
     lineHeight: "1",
   },
 
   selectedIconDivider: {
-    marginTop: "24px",
-    marginBottom: "16px",
+    marginTop: "12px",
+    marginBottom: "8px",
   },
 
   detailPanel: {
     backgroundColor: tokens.colorNeutralBackground2,
     ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderRadius(tokens.borderRadiusLarge),
-    ...shorthands.padding("20px"),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.padding("12px"),
   },
 
   detailHeader: {
     display: "flex",
     alignItems: "center",
-    ...shorthands.gap("16px"),
-    marginBottom: "16px",
+    ...shorthands.gap("12px"),
+    marginBottom: "10px",
   },
 
   detailIcon: {
-    fontSize: "48px",
+    fontSize: "36px",
     color: tokens.colorNeutralForeground1,
   },
 
   detailTitle: {
-    fontSize: tokens.fontSizeBase500,
+    fontSize: tokens.fontSizeBase400,
     fontWeight: tokens.fontWeightSemibold,
     ...shorthands.margin("0"),
   },
@@ -269,11 +276,11 @@ export const useAppStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground6,
     color: tokens.colorNeutralForeground1,
     ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    ...shorthands.padding("12px", "16px"),
+    ...shorthands.padding("8px", "10px"),
     fontFamily: tokens.fontFamilyMonospace,
     fontSize: tokens.fontSizeBase200,
     overflowX: "auto",
-    marginBottom: "12px",
+    marginBottom: "8px",
     position: "relative",
   },
 
@@ -300,10 +307,10 @@ export const useAppStyles = makeStyles({
 
   copyButton: {
     position: "absolute",
-    top: "8px",
-    right: "8px",
-    ...shorthands.padding("4px", "8px"),
-    fontSize: "11px",
+    top: "4px",
+    right: "4px",
+    ...shorthands.padding("2px", "6px"),
+    fontSize: "10px",
     backgroundColor: tokens.colorNeutralBackground1Hover,
     color: tokens.colorNeutralForeground1,
     ...shorthands.border("none"),
@@ -316,7 +323,7 @@ export const useAppStyles = makeStyles({
 
   loading: {
     textAlign: "center",
-    ...shorthands.padding("40px"),
+    ...shorthands.padding("32px"),
     color: tokens.colorNeutralForeground2,
   },
 
@@ -324,20 +331,20 @@ export const useAppStyles = makeStyles({
     backgroundColor: tokens.colorStatusDangerBackground1,
     ...shorthands.border("1px", "solid", tokens.colorStatusDangerBorder1),
     ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    ...shorthands.padding("12px", "16px"),
+    ...shorthands.padding("8px", "12px"),
     color: tokens.colorStatusDangerForeground1,
-    marginBottom: "16px",
+    marginBottom: "8px",
   },
 
   emptyState: {
     textAlign: "center",
-    ...shorthands.padding("60px", "20px"),
+    ...shorthands.padding("32px", "16px"),
     color: tokens.colorNeutralForeground2,
   },
 
   emptyIcon: {
-    fontSize: "48px",
-    marginBottom: "16px",
+    fontSize: "36px",
+    marginBottom: "8px",
     opacity: 0.5,
   },
 });
