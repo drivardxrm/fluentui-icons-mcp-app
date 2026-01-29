@@ -10,7 +10,7 @@ export interface IconsGridProps {
   displayData: StructuredContent | null;
   selectedBaseIcon: IconResult | null;
   selectedIconSize: string | null;
-  onSelectIcon: (icon: IconResult, size: string | null) => void;
+  onSelectIcon: (icon: IconResult, size: string | null, baseIcon: IconResult) => void;
   onSizeChange: (size: string | null) => void;
   onAddImport: (importStatement: string) => void;
 }
@@ -37,7 +37,7 @@ export function IconsGrid({
               icon={icon}
               isSelected={isCardSelected}
               onSelect={(iconWithSize, size) => {
-                onSelectIcon(iconWithSize, size);
+                onSelectIcon(iconWithSize, size, icon);
               }}
               controlledSize={isCardSelected ? selectedIconSize : undefined}
               onSizeChange={isCardSelected ? onSizeChange : undefined}

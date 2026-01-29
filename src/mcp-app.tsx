@@ -195,15 +195,11 @@ function FluentUIIconsAppInner({
   }, [app]);
 
   // Handle icon selection from grid
-  const handleSelectIcon = useCallback((iconWithSize: IconResult, size: string | null) => {
+  const handleSelectIcon = useCallback((iconWithSize: IconResult, size: string | null, baseIcon: IconResult) => {
     setSelectedIcon(iconWithSize);
     setSelectedIconSize(size);
-    // Find the base icon from displayData
-    const baseIcon = displayData?.icons.find(i => 
-      iconWithSize.name.includes(i.name.replace(/Regular|Filled|Color$/, ''))
-    );
-    setSelectedBaseIcon(baseIcon || iconWithSize);
-  }, [displayData]);
+    setSelectedBaseIcon(baseIcon);
+  }, []);
 
   return (
     <main
@@ -215,8 +211,8 @@ function FluentUIIconsAppInner({
         paddingLeft: hostContext?.safeAreaInsets?.left,
       }}
     >
-      {/* Sticky Header Section */}
-      <div className={styles.stickyHeader}>
+      {/* Header Section */}
+      <div>
         <Header isDarkMode={isDarkMode} onToggleTheme={onToggleTheme} />
 
         <SearchBar
