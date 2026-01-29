@@ -305,10 +305,19 @@ export const useAppStyles = makeStyles({
     letterSpacing: "0.5px",
   },
 
-  copyButton: {
+  codeBlockButtons: {
     position: "absolute",
     top: "8px",
     right: "8px",
+    display: "flex",
+    ...shorthands.gap("4px"),
+  },
+
+  codeBlockButton: {
+    fontSize: "11px",
+  },
+
+  copyButton: {
     ...shorthands.padding("4px", "8px"),
     fontSize: "11px",
     backgroundColor: tokens.colorNeutralBackground1Hover,

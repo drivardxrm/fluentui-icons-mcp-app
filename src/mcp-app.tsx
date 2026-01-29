@@ -5,7 +5,7 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { Search24Regular, Copy20Regular, Checkmark20Regular, WeatherSunny16Filled, WeatherMoon16Filled, Code16Regular } from "@fluentui/react-icons";
+import { Search24Regular, Copy20Regular, Checkmark20Regular, WeatherSunny16Filled, WeatherMoon16Filled, Code16Regular, DocumentAdd16Regular } from "@fluentui/react-icons";
 import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider, SearchBox, Button, Tooltip, mergeClasses, Switch } from "@fluentui/react-components";
 import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
@@ -410,6 +410,22 @@ function FluentUIIconsAppInner({
     navigator.clipboard.writeText(text);
   }, []);
 
+  // Add import to current file via Copilot
+  const addImportToFile = useCallback(async (importStatement: string) => {
+    if (!app) return;
+    try {
+      await app.sendMessage({
+        role: "user",
+        content: [{
+          type: "text",
+          text: `Add this import statement to the current file if it doesn't already exist: ${importStatement}`
+        }]
+      });
+    } catch (err) {
+      console.error("Failed to send message to add import:", err);
+    }
+  }, [app]);
+
   return (
     <main
       className={styles.app}
@@ -576,12 +592,25 @@ function FluentUIIconsAppInner({
           <div className={styles.codeLabel}>Import Statement</div>
           <div className={styles.codeBlock}>
             <code>{selectedIcon.importStatement}</code>
-            <button
-              className={styles.copyButton}
-              onClick={() => copyToClipboard(selectedIcon.importStatement)}
-            >
-              Copy
-            </button>
+            <div className={styles.codeBlockButtons}>
+              <Tooltip content="Add import to current file" relationship="label">
+                <Button
+                  appearance="subtle"
+                  size="small"
+                  icon={<DocumentAdd16Regular />}
+                  onClick={() => addImportToFile(selectedIcon.importStatement)}
+                  className={styles.codeBlockButton}
+                >
+                  Add to File
+                </Button>
+              </Tooltip>
+              <button
+                className={styles.copyButton}
+                onClick={() => copyToClipboard(selectedIcon.importStatement)}
+              >
+                Copy
+              </button>
+            </div>
           </div>
 
           <div className={styles.codeLabel}>JSX Element</div>
