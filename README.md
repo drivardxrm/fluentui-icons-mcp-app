@@ -2,10 +2,8 @@
 
 An MCP App for exploring and searching **Fluent UI React V9 icons** from `@fluentui/react-icons`.
 
-<img width="970" height="738" alt="image" src="https://github.com/user-attachments/assets/5f2bdd96-f518-4be3-9bc4-930f78099147" />
+<img width="783" height="1075" alt="image" src="https://github.com/user-attachments/assets/4e690a63-3787-49c1-a962-1c508c1bdf25" />
 
-
-<img width="871" height="425" alt="image" src="https://github.com/user-attachments/assets/3fb0247b-bab6-4100-a6b5-074183605744" />
 
 
 
