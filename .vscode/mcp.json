@@ -1,8 +1,12 @@
 {
 	"servers": {
-		"my-mcp-server-40009953": {
+		"fluentui-icons-mcp-app": {
 			"url": "http://localhost:3001/mcp",
 			"type": "http"
+		},
+		"github": {
+			"type": "http",
+			"url": "https://api.githubcopilot.com/mcp/"
 		}
 	},
 	"inputs": []
