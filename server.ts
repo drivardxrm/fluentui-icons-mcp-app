@@ -16,6 +16,7 @@ const DIST_DIR = import.meta.filename.endsWith(".ts")
  */
 interface IconResult {
   name: string;
+  displayName?: string;
   jsxElement: string;
   importStatement: string;
   category: string;
@@ -23,27 +24,26 @@ interface IconResult {
 
 /**
  * Get all available icon names from the pre-generated static list
- * Icons follow the pattern: {Name}{Variant}{Size}
- * e.g., Add24Regular, Add24Filled, ArrowLeft20Regular
+ * Icons follow the pattern: {Name}{Variant}
+ * e.g., AddRegular, AddFilled, ArrowLeftRegular
  */
 function getFluentIconNames(): string[] {
   return FLUENT_ICON_NAMES as unknown as string[];
 }
 
 /**
- * Parse icon name to extract components
+ * Parse icon name to extract components (unsized icons)
  */
-function parseIconName(name: string): { baseName: string; size: string; variant: string } {
-  // Pattern: BaseName + Size (number) + Variant (Regular/Filled)
-  const match = name.match(/^(.+?)(\d+)(Regular|Filled)$/);
+function parseIconName(name: string): { baseName: string; variant: string } {
+  // Pattern: BaseName + Variant (Regular/Filled/Color)
+  const match = name.match(/^(.+?)(Regular|Filled|Color)$/);
   if (match) {
     return {
       baseName: match[1],
-      size: match[2],
-      variant: match[3],
+      variant: match[2],
     };
   }
-  return { baseName: name, size: "", variant: "" };
+  return { baseName: name, variant: "" };
 }
 
 /**
@@ -362,22 +362,9 @@ function searchIcons(query: string, maxResults: number = 20): IconResult[] {
         }
       }
       
-      // Only include sizes 20 and 24 (which are in the client registry)
-      // Filter out other sizes like 12, 16, 28, 32, 48
+      // Prefer Regular variant
       if (score > 0) {
-        const sizeMatch = name.match(/(\d+)(Regular|Filled|Color)$/);
-        if (sizeMatch) {
-          const size = sizeMatch[1];
-          if (size !== "20" && size !== "24") {
-            score = 0; // Exclude icons not in the registry
-          }
-        }
-      }
-      
-      // Prefer Regular variant and size 24
-      if (score > 0) {
-        if (name.includes("24")) score += 2;
-        if (name.includes("Regular")) score += 1;
+        if (name.endsWith("Regular")) score += 1;
       }
       
       return { name, score };
@@ -387,7 +374,7 @@ function searchIcons(query: string, maxResults: number = 20): IconResult[] {
     .slice(0, maxResults);
   
   return scored.map(({ name }) => {
-    const { baseName, size, variant } = parseIconName(name);
+    const { baseName, variant } = parseIconName(name);
     return {
       name,
       jsxElement: `<${name} />`,

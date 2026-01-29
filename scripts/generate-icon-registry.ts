@@ -9,7 +9,6 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ICONS_DIR = path.join(process.cwd(), "node_modules/@fluentui/react-icons/lib/icons");
-const SIZED_ICONS_DIR = path.join(process.cwd(), "node_modules/@fluentui/react-icons/lib/sizedIcons");
 const OUTPUT_FILE = path.join(process.cwd(), "src/icon-registry.tsx");
 
 function extractIconNamesFromDts(filePath: string): string[] {
@@ -40,28 +39,16 @@ function main() {
   
   const allIconNames: Set<string> = new Set();
   
-  // Process icons directory
+  // Process icons directory only (not sizedIcons)
   const iconFiles = getAllDtsFiles(ICONS_DIR);
   for (const file of iconFiles) {
     const names = extractIconNamesFromDts(file);
     names.forEach(name => allIconNames.add(name));
   }
   
-  // Process sizedIcons directory  
-  const sizedIconFiles = getAllDtsFiles(SIZED_ICONS_DIR);
-  for (const file of sizedIconFiles) {
-    const names = extractIconNamesFromDts(file);
-    names.forEach(name => allIconNames.add(name));
-  }
-  
-  // Filter to only include commonly used sizes (20, 24) and variants to reduce bundle size
-  // You can adjust this filter based on your needs
+  // Use all icons from the icons folder (these are unsized bundled icons)
   const filteredIcons = Array.from(allIconNames)
-    .filter(name => {
-      // Include icons with size 20, 24, or no size (base icons)
-      return name.match(/(20|24)(Regular|Filled|Color)$/) || 
-             name.match(/(Regular|Filled|Color)$/) && !name.match(/\d+(Regular|Filled|Color)$/);
-    })
+    .filter(name => name.match(/(Regular|Filled|Color)$/))
     .sort();
   
   console.log(`Found ${allIconNames.size} total icons, filtered to ${filteredIcons.length} for registry`);

@@ -9,7 +9,6 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ICONS_DIR = path.join(process.cwd(), "node_modules/@fluentui/react-icons/lib/icons");
-const SIZED_ICONS_DIR = path.join(process.cwd(), "node_modules/@fluentui/react-icons/lib/sizedIcons");
 const OUTPUT_FILE = path.join(process.cwd(), "src/icon-names.ts");
 
 function extractIconNamesFromDts(filePath: string): string[] {
@@ -40,16 +39,9 @@ function main() {
   
   const allIconNames: Set<string> = new Set();
   
-  // Process icons directory
+  // Process icons directory only (unsized bundled icons)
   const iconFiles = getAllDtsFiles(ICONS_DIR);
   for (const file of iconFiles) {
-    const names = extractIconNamesFromDts(file);
-    names.forEach(name => allIconNames.add(name));
-  }
-  
-  // Process sizedIcons directory
-  const sizedIconFiles = getAllDtsFiles(SIZED_ICONS_DIR);
-  for (const file of sizedIconFiles) {
     const names = extractIconNamesFromDts(file);
     names.forEach(name => allIconNames.add(name));
   }
