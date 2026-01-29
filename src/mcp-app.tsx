@@ -27,6 +27,7 @@ function FluentUIIconsApp({ isDarkMode, onToggleTheme }: FluentUIIconsAppProps) 
   const [toolResult, setToolResult] = useState<CallToolResult | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
+  const [threshold, setThreshold] = useState(0.1);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +104,8 @@ function FluentUIIconsApp({ isDarkMode, onToggleTheme }: FluentUIIconsAppProps) 
       hostContext={hostContext}
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
+      threshold={threshold}
+      setThreshold={setThreshold}
       isSearching={isSearching}
       setIsSearching={setIsSearching}
       error={error}
@@ -119,6 +122,8 @@ interface AppInnerProps {
   hostContext?: McpUiHostContext;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  threshold: number;
+  setThreshold: (threshold: number) => void;
   isSearching: boolean;
   setIsSearching: (searching: boolean) => void;
   error: string | null;
@@ -133,6 +138,8 @@ function FluentUIIconsAppInner({
   hostContext,
   searchQuery,
   setSearchQuery,
+  threshold,
+  setThreshold,
   isSearching,
   setIsSearching,
   error,
@@ -156,7 +163,7 @@ function FluentUIIconsAppInner({
     try {
       const result = await app.callServerTool({
         name: "search-fluentui-icons",
-        arguments: { query: searchQuery, maxResults: 30 },
+        arguments: { query: searchQuery, maxResults: 30, threshold },
       });
       setLocalResult(result);
     } catch (err) {
@@ -164,7 +171,7 @@ function FluentUIIconsAppInner({
     } finally {
       setIsSearching(false);
     }
-  }, [app, searchQuery, setError, setIsSearching]);
+  }, [app, searchQuery, threshold, setError, setIsSearching]);
 
   // Local state for results when callServerTool is used
   const [localResult, setLocalResult] = useState<CallToolResult | null>(toolResult);
@@ -172,6 +179,17 @@ function FluentUIIconsAppInner({
   useEffect(() => {
     setLocalResult(toolResult);
   }, [toolResult]);
+
+  // Retrigger search when threshold changes (with debounce)
+  useEffect(() => {
+    if (!searchQuery.trim() || !localResult) return;
+    
+    const timer = setTimeout(() => {
+      handleSearch();
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [threshold]); // Only trigger on threshold change
 
   const displayData = useMemo(() => {
     if (!localResult) return null;
@@ -220,6 +238,8 @@ function FluentUIIconsAppInner({
           onSearchQueryChange={setSearchQuery}
           onSearch={handleSearch}
           isSearching={isSearching}
+          threshold={threshold}
+          onThresholdChange={setThreshold}
         />
 
         {/* Error State */}

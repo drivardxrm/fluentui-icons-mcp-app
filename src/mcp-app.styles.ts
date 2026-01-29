@@ -82,10 +82,37 @@ export const useAppStyles = makeStyles({
   },
 
   searchBox: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("16px"),
     flexGrow: 1,
   },
 
   searchInput: {
+    flexGrow: 1,
+    minWidth: "200px",
+  },
+
+  thresholdContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    minWidth: "140px",
+  },
+
+  thresholdLabel: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("4px"),
+    marginBottom: "2px",
+  },
+
+  thresholdInfo: {
+    color: tokens.colorNeutralForeground3,
+    cursor: "help",
+  },
+
+  thresholdSlider: {
     width: "100%",
   },
 
