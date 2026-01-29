@@ -499,12 +499,49 @@ const semanticIconMapping: Record<string, string[]> = {
   apple: ["Apple", "Food"],
   egg: ["Egg", "Food"],
   pizza: ["Pizza", "Food"],
-  drink: ["Drink", "Coffee", "Cup"],
+  drink: ["Drink", "Coffee", "Cup", "DrinkBeer", "DrinkWine"],
   coffee: ["Coffee", "Drink", "Cup"],
   tea: ["Coffee", "Drink", "Cup"],
   restaurant: ["Food", "Restaurant", "Fork"],
   eat: ["Food", "Restaurant", "Bowl"],
   meal: ["Food", "Restaurant", "Bowl"],
+  // Soups and bowls
+  soup: ["Bowl", "Food", "Restaurant", "Drink"],
+  wonton: ["Bowl", "Food", "Restaurant"],
+  ramen: ["Bowl", "Food", "Restaurant"],
+  noodle: ["Bowl", "Food", "Restaurant"],
+  pasta: ["Bowl", "Food", "Restaurant"],
+  salad: ["Bowl", "Food", "Leaf"],
+  cereal: ["Bowl", "Food"],
+  rice: ["Bowl", "Food"],
+  bowl: ["Bowl", "Food"],
+  // Beverages
+  beer: ["DrinkBeer", "Drink", "Cup"],
+  wine: ["DrinkWine", "Drink", "Cup"],
+  cocktail: ["DrinkMargarita", "Drink", "Cup"],
+  margarita: ["DrinkMargarita", "Drink"],
+  juice: ["Drink", "Cup", "Apple"],
+  soda: ["Drink", "Cup"],
+  beverage: ["Drink", "Coffee", "Cup", "DrinkBeer"],
+  // Cooking
+  cook: ["Food", "Bowl", "Restaurant"],
+  cooking: ["Food", "Bowl", "Restaurant"],
+  chef: ["Food", "Restaurant", "Hat"],
+  kitchen: ["Food", "Restaurant", "Bowl"],
+  recipe: ["Food", "Document", "Book"],
+  // Snacks and desserts
+  snack: ["Food", "Cookie", "Apple"],
+  dessert: ["Food", "Cookie", "Birthday"],
+  cake: ["Food", "Birthday"],
+  cookie: ["Cookie", "Food"],
+  candy: ["Food", "Heart"],
+  chocolate: ["Food", "Heart"],
+  icecream: ["Food", "Cone"],
+  // Breakfast
+  breakfast: ["Food", "Egg", "Coffee", "Bowl"],
+  lunch: ["Food", "Restaurant", "Bowl"],
+  dinner: ["Food", "Restaurant", "Bowl"],
+  brunch: ["Food", "Coffee", "Egg"],
   
   // -------------------------------------------------------------------------
   // TRANSPORTATION
@@ -806,14 +843,18 @@ function getSubstringMatchScore(iconName: string, queryWords: string[]): number 
  *    "save" → searches for "Save", "Download", "Disk" icons.
  *    Also does fuzzy matching on semantic keys ("favorit" → "favorite").
  * 
- * 4. WORDNET SYNONYMS (Score: 40-45) - Fallback only
- *    If we don't have enough results, expand using dictionary synonyms.
+ * 4. WORDNET SYNONYMS (Score: 40-55) - Always runs
+ *    Expands search using dictionary synonyms from WordNet.
+ *    "science" → "chemistry" → Beaker icons (via semantic bridge).
  *    "automobile" → "car" → VehicleCar icons.
+ *    Semantic bridging (synonym → semantic key) scores 55.
+ *    Direct synonym matching scores 40.
  * 
  * SCORING PRIORITY:
  * - Higher scores appear first in results
  * - Substring matches (150-250) beat fuzzy matches (0-100)
  * - Direct semantic matches (70) beat fuzzy semantic matches (50)
+ * - WordNet→semantic bridge (55) beats direct WordNet (40)
  * - Regular variants preferred over Filled when scores are equal
  * 
  * @param query - User's search query (can be multiple words)
@@ -919,43 +960,47 @@ export async function searchIcons(
   }
   
   // -------------------------------------------------------------------------
-  // LAYER 3: WordNet synonyms (fallback only)
+  // LAYER 3: WordNet synonyms (ALWAYS runs, not just as fallback)
   // -------------------------------------------------------------------------
-  // Only used if we have fewer results than requested.
-  // This expands the search using dictionary synonyms.
-  if (iconScores.size < maxResults) {
-    for (const word of queryWords) {
-      // Skip if we already have custom mapping for this word
-      if (semanticIconMapping[word]) continue;
-      
-      const synonyms = await getSynonyms(word);
-      
-      for (const synonym of synonyms) {
-        // 3a. Search icons directly with the synonym
-        const synonymResults = iconFuse.search(synonym, { limit: 5 });
-        for (const result of synonymResults) {
-          // WordNet matches score lower than semantic matches
-          const score = 40 - (result.score || 0) * 30;
-          iconScores.set(
-            result.item.name, 
-            Math.max(iconScores.get(result.item.name) || 0, score)
-          );
-        }
-        
-        // 3b. Check if synonym matches a custom semantic key
-        // This bridges WordNet to our custom mapping
-        if (semanticIconMapping[synonym]) {
-          for (const pattern of semanticIconMapping[synonym]) {
-            const semanticResults = iconFuse.search(pattern, { limit: 5 });
-            for (const result of semanticResults) {
-              const score = 45 - (result.score || 0) * 30;
-              iconScores.set(
-                result.item.name, 
-                Math.max(iconScores.get(result.item.name) || 0, score)
-              );
-            }
+  // WordNet expansion helps discover related concepts even when we have
+  // some results. For example, "science" → "chemistry" → Beaker icons.
+  // This bridges terms that aren't in our semantic mapping through dictionary
+  // relationships.
+  for (const word of queryWords) {
+    const synonyms = await getSynonyms(word);
+    
+    // Debug logging - helps diagnose synonym expansion
+    if (synonyms.length > 0) {
+      console.log(`[WordNet] "${word}" → [${synonyms.join(", ")}]`);
+    }
+    
+    for (const synonym of synonyms) {
+      // 3a. Check if synonym matches a semantic key (PRIORITY)
+      // This bridges WordNet → our custom mapping
+      // e.g., "science" → WordNet "chemistry" → semantic "chemistry" → Beaker
+      if (semanticIconMapping[synonym]) {
+        for (const pattern of semanticIconMapping[synonym]) {
+          const semanticResults = iconFuse.search(pattern, { limit: 8 });
+          for (const result of semanticResults) {
+            // Higher score for semantic bridging (55) than direct WordNet search (40)
+            const score = 55 - (result.score || 0) * 30;
+            iconScores.set(
+              result.item.name, 
+              Math.max(iconScores.get(result.item.name) || 0, score)
+            );
           }
         }
+      }
+      
+      // 3b. Search icons directly with the synonym
+      const synonymResults = iconFuse.search(synonym, { limit: 5 });
+      for (const result of synonymResults) {
+        // WordNet direct matches score lower than semantic matches
+        const score = 40 - (result.score || 0) * 30;
+        iconScores.set(
+          result.item.name, 
+          Math.max(iconScores.get(result.item.name) || 0, score)
+        );
       }
     }
   }
