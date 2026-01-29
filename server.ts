@@ -58,12 +58,15 @@ const semanticIconMapping: Record<string, string[]> = {
   magic: ["Wand", "Sparkle", "Star", "Magic"],
   shine: ["Sparkle", "Star", "Sun", "Lightbulb", "Flash"],
   glitter: ["Sparkle", "Star"],
+  glow: ["Sparkle", "Flash", "Lightbulb", "Star"],
+  bright: ["Sparkle", "Star", "Sun", "Lightbulb", "Brightness"],
   
   // Actions - Add/Create
   add: ["Add", "Plus", "New", "Create"],
   create: ["Add", "New", "Document", "Compose"],
   new: ["Add", "New", "Document", "Plus"],
   plus: ["Add", "Plus"],
+  insert: ["Add", "Insert", "Plus"],
   
   // Actions - Remove/Delete
   delete: ["Delete", "Trash", "Remove", "Dismiss", "Clear"],
@@ -71,17 +74,20 @@ const semanticIconMapping: Record<string, string[]> = {
   trash: ["Delete", "Trash"],
   clear: ["Clear", "Dismiss", "Eraser", "Backspace"],
   erase: ["Eraser", "Clear", "Delete", "Backspace"],
+  destroy: ["Delete", "Trash", "Dismiss"],
   
   // Actions - Edit/Modify
   edit: ["Edit", "Pen", "Pencil", "Compose", "Rename"],
   modify: ["Edit", "Settings", "Options", "Wrench"],
   write: ["Edit", "Pen", "Compose", "TextEdit"],
   compose: ["Compose", "Edit", "Mail", "New"],
+  change: ["Edit", "ArrowSync", "Rename", "Settings"],
+  update: ["ArrowSync", "Update", "Download", "Edit"],
   
   // Actions - Save/Download/Upload
   save: ["Save", "Checkmark", "ArrowDownload", "Disk"],
-  download: ["ArrowDownload", "Download", "CloudDownload", "Save"],
-  upload: ["ArrowUpload", "Upload", "CloudUpload", "Send"],
+  download: ["ArrowDownload", "Download", "CloudDownload", "Save", "ArrowDown"],
+  upload: ["ArrowUpload", "Upload", "CloudUpload", "Send", "ArrowUp"],
   export: ["ArrowExport", "Share", "Send", "Save"],
   import: ["ArrowImport", "Folder", "Open"],
   
@@ -90,10 +96,13 @@ const semanticIconMapping: Record<string, string[]> = {
   paste: ["ClipboardPaste", "Paste", "Clipboard"],
   cut: ["Cut", "Scissors"],
   duplicate: ["Copy", "Duplicate", "Clone"],
+  clone: ["Copy", "Duplicate"],
   
   // Actions - Undo/Redo
   undo: ["ArrowUndo", "Undo", "ArrowHook"],
   redo: ["ArrowRedo", "Redo", "ArrowHook"],
+  revert: ["ArrowUndo", "Undo", "History"],
+  restore: ["ArrowUndo", "History", "Restore"],
   
   // Navigation - Arrows
   arrow: ["Arrow", "Chevron", "Caret", "Triangle"],
@@ -105,11 +114,15 @@ const semanticIconMapping: Record<string, string[]> = {
   forward: ["ArrowRight", "Forward", "Next", "ChevronRight"],
   next: ["ArrowRight", "ChevronRight", "Next", "Forward"],
   previous: ["ArrowLeft", "ChevronLeft", "Previous", "Back"],
+  direction: ["Arrow", "Navigation", "Compass"],
   
   // Navigation - Home/Menu
   home: ["Home", "House"],
+  house: ["Home", "House", "Building"],
   menu: ["Navigation", "Hamburger", "LineHorizontal", "MoreVertical", "MoreHorizontal"],
   hamburger: ["Navigation", "LineHorizontal"],
+  sidebar: ["Panel", "Navigation", "Sidebar"],
+  panel: ["Panel", "Sidebar", "Window"],
   
   // Communication
   email: ["Mail", "Envelope", "Send", "Read"],
@@ -121,6 +134,9 @@ const semanticIconMapping: Record<string, string[]> = {
   call: ["Call", "Phone", "Video"],
   phone: ["Call", "Phone", "Contact"],
   video: ["Video", "Camera", "Call", "Film", "Play"],
+  talk: ["Chat", "Comment", "Mic", "Call"],
+  speak: ["Mic", "Speaker", "Chat", "Comment"],
+  conversation: ["Chat", "Comment", "Message", "Bubble"],
   
   // People & Users
   user: ["Person", "People", "Contact", "Guest", "Account"],
@@ -130,6 +146,10 @@ const semanticIconMapping: Record<string, string[]> = {
   group: ["People", "Group", "Folder"],
   profile: ["Person", "Contact", "Account", "Info"],
   account: ["Person", "Account", "Key", "Lock"],
+  customer: ["Person", "People", "Contact"],
+  employee: ["Person", "People", "Contact", "Badge"],
+  member: ["Person", "People", "Contact"],
+  friend: ["Person", "People", "Heart"],
   
   // Time & Calendar
   calendar: ["Calendar", "Date", "Event", "Clock"],
@@ -139,6 +159,8 @@ const semanticIconMapping: Record<string, string[]> = {
   schedule: ["Calendar", "Clock", "Timer", "Event"],
   event: ["Calendar", "Event", "Star"],
   reminder: ["Alert", "Bell", "Clock", "Calendar"],
+  appointment: ["Calendar", "Clock", "Person"],
+  meeting: ["People", "Calendar", "Video", "Call"],
   
   // Files & Documents
   file: ["Document", "File", "Page", "Text"],
@@ -150,9 +172,12 @@ const semanticIconMapping: Record<string, string[]> = {
   image: ["Image", "Photo", "Picture", "Camera"],
   photo: ["Image", "Photo", "Camera", "Picture"],
   picture: ["Image", "Photo", "Picture"],
+  text: ["Text", "Document", "Font", "Type"],
+  page: ["Document", "Page", "File"],
+  paper: ["Document", "Page", "File"],
   
   // Media
-  play: ["Play", "Video", "Media"],
+  play: ["Play", "Video", "Media", "Triangle"],
   pause: ["Pause", "Stop"],
   stop: ["Stop", "Pause", "Square"],
   music: ["Music", "Note", "Speaker", "Headphones"],
@@ -161,6 +186,9 @@ const semanticIconMapping: Record<string, string[]> = {
   mute: ["SpeakerMute", "MicOff", "Volume"],
   microphone: ["Mic", "Microphone", "Record"],
   record: ["Record", "Microphone", "Circle"],
+  volume: ["Speaker", "Volume", "Sound"],
+  speaker: ["Speaker", "Volume", "Sound"],
+  headphones: ["Headphones", "Music", "Audio"],
   
   // UI Elements
   settings: ["Settings", "Gear", "Cog", "Options", "Wrench"],
@@ -172,19 +200,29 @@ const semanticIconMapping: Record<string, string[]> = {
   search: ["Search", "Magnify", "Find", "Zoom"],
   find: ["Search", "Find", "Magnify"],
   zoom: ["ZoomIn", "ZoomOut", "Search", "Magnify"],
+  button: ["Button", "Square", "Click"],
+  toggle: ["Toggle", "Switch", "Slider"],
+  switch: ["Toggle", "Switch", "ArrowSwap"],
+  slider: ["Slider", "Settings", "Options"],
+  dropdown: ["ChevronDown", "CaretDown", "Dropdown"],
   
   // Status & Feedback
   check: ["Checkmark", "Check", "Done", "Accept"],
   checkmark: ["Checkmark", "Done", "Accept"],
   done: ["Checkmark", "Done", "Complete"],
+  complete: ["Checkmark", "Done", "Complete"],
   success: ["Checkmark", "CheckCircle", "Done"],
   error: ["Error", "Dismiss", "Warning", "XCircle"],
+  fail: ["Error", "Dismiss", "Warning"],
+  failure: ["Error", "Dismiss", "Warning"],
   warning: ["Warning", "Alert", "Exclamation"],
   alert: ["Alert", "Warning", "Bell", "Notification"],
   info: ["Info", "Question", "Help"],
+  information: ["Info", "Question", "Help"],
   help: ["Question", "Help", "Info", "Support"],
   question: ["Question", "Help", "Info"],
   notification: ["Alert", "Bell", "Notification", "Ring"],
+  badge: ["Badge", "Certificate", "Award", "Circle"],
   
   // Security
   lock: ["Lock", "Locked", "Key", "Shield", "Secure"],
@@ -193,22 +231,29 @@ const semanticIconMapping: Record<string, string[]> = {
   password: ["Key", "Lock", "Eye", "Password"],
   security: ["Shield", "Lock", "Key", "Secure"],
   shield: ["Shield", "Security", "Protected"],
+  protect: ["Shield", "Lock", "Security"],
+  safe: ["Shield", "Lock", "Security"],
+  private: ["Lock", "Eye", "Shield", "Incognito"],
   
   // Cloud & Sync
   cloud: ["Cloud", "Weather", "Sync"],
   sync: ["Sync", "ArrowSync", "Refresh", "Update"],
   refresh: ["ArrowSync", "Refresh", "Reload"],
-  update: ["ArrowSync", "Update", "Download"],
+  reload: ["ArrowSync", "Refresh", "Reload"],
+  loading: ["Spinner", "Hourglass", "ArrowSync"],
+  wait: ["Spinner", "Hourglass", "Clock"],
   
   // Favorites & Rating
   favorite: ["Star", "Heart", "Bookmark", "Pin"],
   star: ["Star", "Sparkle", "Rating"],
   heart: ["Heart", "Like", "Love", "Favorite"],
   like: ["ThumbLike", "Heart", "Star"],
+  love: ["Heart", "Like", "Star"],
   dislike: ["ThumbDislike"],
   bookmark: ["Bookmark", "Flag", "Star", "Pin"],
-  pin: ["Pin", "Bookmark", "Tack"],
+  pin: ["Pin", "Bookmark", "Tack", "Location"],
   flag: ["Flag", "Bookmark", "Alert"],
+  rating: ["Star", "ThumbLike", "Heart"],
   
   // Layout & View
   grid: ["Grid", "Apps", "Table", "Layout"],
@@ -219,6 +264,14 @@ const semanticIconMapping: Record<string, string[]> = {
   maximize: ["Maximize", "FullScreen", "Expand"],
   minimize: ["Minimize", "Collapse", "WindowMinimize"],
   fullscreen: ["FullScreen", "Maximize", "Expand"],
+  layout: ["Layout", "Grid", "Column", "Row"],
+  column: ["Column", "Layout", "TextColumn"],
+  row: ["Row", "Layout", "Table"],
+  view: ["Eye", "View", "Preview", "Visibility"],
+  hide: ["EyeOff", "Hide", "Visibility"],
+  show: ["Eye", "View", "Visibility"],
+  visible: ["Eye", "View", "Visibility"],
+  invisible: ["EyeOff", "Hide"],
   
   // Connectivity
   wifi: ["Wifi", "Signal", "Network"],
@@ -226,57 +279,116 @@ const semanticIconMapping: Record<string, string[]> = {
   network: ["Globe", "Network", "Wifi", "Signal"],
   internet: ["Globe", "Earth", "Network", "World"],
   globe: ["Globe", "Earth", "World", "International"],
+  web: ["Globe", "World", "Browser"],
+  online: ["Globe", "Wifi", "Signal", "Cloud"],
+  offline: ["CloudOff", "WifiOff", "Signal"],
+  connect: ["Link", "PlugConnected", "Wifi"],
+  disconnect: ["Unlink", "PlugDisconnected", "WifiOff"],
   
   // Devices
   computer: ["Desktop", "Monitor", "Computer", "Laptop"],
   laptop: ["Laptop", "Device"],
+  desktop: ["Desktop", "Monitor", "Computer"],
+  monitor: ["Desktop", "Monitor", "Screen"],
+  screen: ["Desktop", "Monitor", "Screen"],
   smartphone: ["Phone", "Mobile", "Device"],
   mobile: ["Phone", "Mobile", "Device"],
   tablet: ["Tablet", "Device"],
   printer: ["Print", "Printer"],
   print: ["Print", "Printer", "Document"],
+  keyboard: ["Keyboard", "Type"],
+  mouse: ["Cursor", "Mouse"],
   
   // Shopping & Money
   cart: ["Cart", "Shopping", "Basket"],
   shopping: ["Cart", "Shopping", "Bag"],
+  basket: ["Cart", "Shopping", "Basket"],
   money: ["Money", "Currency", "Payment", "Wallet"],
   payment: ["Payment", "CreditCard", "Money", "Wallet"],
   credit: ["CreditCard", "Payment", "Money"],
   wallet: ["Wallet", "Money", "Payment"],
+  dollar: ["Money", "Currency", "CurrencyDollar"],
+  bank: ["Building", "Money", "Wallet"],
+  receipt: ["Receipt", "Document", "Money"],
   
   // Weather
   weather: ["Weather", "Cloud", "Sun", "Rain"],
   sun: ["Sun", "Brightness", "Weather", "Light"],
+  sunny: ["Sun", "Brightness", "Weather"],
   moon: ["Moon", "Dark", "Night", "Sleep"],
   rain: ["Rain", "Weather", "Cloud", "Drop"],
+  snow: ["Snow", "Weather", "Cold"],
+  temperature: ["Temperature", "Thermometer", "Weather"],
   
   // Code & Development
   code: ["Code", "Braces", "Terminal", "Developer"],
   developer: ["Code", "Braces", "Terminal", "Bug"],
   terminal: ["Terminal", "Code", "Console"],
+  console: ["Terminal", "Code", "Console"],
   bug: ["Bug", "Error", "Debug"],
   debug: ["Bug", "Code", "Wrench"],
+  api: ["Code", "Braces", "PlugConnected"],
+  database: ["Database", "Server", "Storage"],
+  server: ["Server", "Database", "Cloud"],
   
   // AI & Intelligence
-  ai: ["Bot", "Brain", "Lightbulb", "Sparkle", "Magic"],
-  bot: ["Bot", "Chat"],
+  ai: ["Bot", "Brain", "Lightbulb", "Sparkle", "Magic", "Wand"],
+  bot: ["Bot", "Chat", "Robot"],
   robot: ["Bot", "BotAdd", "BotSparkle"],
   brain: ["Brain", "Lightbulb", "Book"],
   idea: ["Lightbulb", "Brain", "Sparkle"],
   lightbulb: ["Lightbulb", "Idea", "Tip"],
+  smart: ["Lightbulb", "Brain", "Sparkle", "Bot"],
+  intelligence: ["Brain", "Bot", "Lightbulb"],
+  machine: ["Bot", "Cog", "Settings"],
+  learning: ["Book", "Brain", "HatGraduation"],
+  wand: ["Wand", "Magic", "Sparkle"],
   
   // Location
   location: ["Location", "Map", "Pin", "Navigation"],
   map: ["Map", "Location", "Globe", "Navigation"],
   gps: ["Location", "Navigation", "Target"],
   navigation: ["Navigation", "Compass", "Map", "Arrow"],
+  place: ["Location", "Pin", "Map"],
+  address: ["Location", "Home", "Building"],
+  compass: ["Compass", "Navigation", "Direction"],
+  
+  // Nature & Animals
+  animal: ["Bug", "Cat", "Dog", "Fish"],
+  tree: ["TreeDeciduous", "TreeEvergreen", "Leaf"],
+  leaf: ["Leaf", "Tree", "Plant"],
+  plant: ["Plant", "Leaf", "Tree"],
+  flower: ["Flower", "Plant", "Leaf"],
+  earth: ["Globe", "Earth", "World"],
+  fire: ["Fire", "Flame", "Hot"],
+  water: ["Drop", "Water", "Rain"],
+  
+  // Food & Drink
+  food: ["Food", "Restaurant", "Bowl", "Pizza"],
+  drink: ["Drink", "Coffee", "Cup"],
+  coffee: ["Coffee", "Drink", "Cup"],
+  restaurant: ["Food", "Restaurant", "Fork"],
+  
+  // Transportation
+  car: ["Vehicle", "Car", "Automobile"],
+  vehicle: ["Vehicle", "Car", "Truck"],
+  plane: ["Airplane", "Flight"],
+  airplane: ["Airplane", "Flight"],
+  flight: ["Airplane", "Flight"],
+  train: ["Vehicle", "Subway"],
+  bus: ["Vehicle", "Bus"],
+  bike: ["Bicycle", "Vehicle"],
+  bicycle: ["Bicycle", "Vehicle"],
   
   // Misc
   tag: ["Tag", "Label", "Hashtag"],
   label: ["Tag", "Label"],
   hashtag: ["Hashtag", "Number", "Tag"],
   gift: ["Gift", "Present", "Box"],
+  present: ["Gift", "Present", "Box"],
   box: ["Box", "Package", "Archive", "Cube"],
+  package: ["Box", "Package", "Archive"],
+  cube: ["Cube", "Box", "3D"],
   clipboard: ["Clipboard", "Paste", "Copy"],
   window: ["Window", "App", "Square"],
   close: ["Dismiss", "Close", "X", "Cancel"],
@@ -284,10 +396,97 @@ const semanticIconMapping: Record<string, string[]> = {
   exit: ["SignOut", "Leave", "Dismiss", "Door"],
   logout: ["SignOut", "Leave", "Person"],
   login: ["SignIn", "Enter", "Person"],
+  signin: ["SignIn", "Enter", "Person"],
+  signout: ["SignOut", "Leave", "Person"],
   share: ["Share", "Send", "Forward", "ArrowExport"],
   open: ["Open", "Launch", "ArrowTopRight", "External"],
   external: ["Open", "Launch", "ArrowTopRight", "LinkSquare"],
+  launch: ["Open", "Launch", "Rocket"],
+  rocket: ["Rocket", "Launch", "Send"],
+  accept: ["Checkmark", "Accept", "Done"],
+  reject: ["Dismiss", "Cancel", "X"],
+  confirm: ["Checkmark", "Accept", "Done"],
+  approve: ["Checkmark", "Accept", "ThumbLike"],
+  deny: ["Dismiss", "Cancel", "ThumbDislike"],
+  attach: ["Attach", "Paperclip", "Link"],
+  detach: ["Unlink", "Dismiss"],
+  empty: ["Empty", "Box", "Folder"],
+  full: ["Full", "Battery", "Circle"],
+  half: ["Half", "Circle"],
+  crop: ["Crop", "Image", "Cut"],
+  rotate: ["Rotate", "Arrow", "Sync"],
+  flip: ["Flip", "Arrow", "Mirror"],
+  drag: ["Drag", "Move", "ReOrder"],
+  drop: ["Drop", "Drag", "Download"],
+  move: ["Move", "Drag", "Arrow"],
+  resize: ["Resize", "Expand", "Arrow"],
+  more: ["MoreHorizontal", "MoreVertical", "Menu", "Ellipsis"],
+  ellipsis: ["MoreHorizontal", "MoreVertical"],
+  dots: ["MoreHorizontal", "MoreVertical", "Ellipsis"],
+  organization: ["Organization", "Building", "People", "Team"],
+  company: ["Building", "Organization", "Briefcase"],
+  business: ["Briefcase", "Building", "Money"],
+  work: ["Briefcase", "Building", "Document"],
+  job: ["Briefcase", "Building", "Document"],
+  task: ["Task", "Checkmark", "List", "Clipboard"],
+  todo: ["Task", "Checkmark", "List", "Clipboard"],
+  checklist: ["Task", "Checkmark", "List"],
+  form: ["Form", "Document", "TextBullet"],
+  survey: ["Form", "Document", "Checkmark"],
+  vote: ["ThumbLike", "Checkmark", "Poll"],
+  poll: ["Poll", "Chart", "Data"],
+  chart: ["Chart", "Data", "Graph"],
+  graph: ["Chart", "Data", "Graph"],
+  analytics: ["Chart", "Data", "Graph"],
+  report: ["Document", "Chart", "Data"],
+  dashboard: ["Grid", "Chart", "Data"],
+  widget: ["Square", "App", "Grid"],
+  app: ["Apps", "Grid", "Square"],
+  application: ["Apps", "Grid", "Window"],
+  tool: ["Wrench", "Tool", "Settings"],
+  tools: ["Wrench", "Tool", "Toolbox"],
+  toolbox: ["Toolbox", "Wrench", "Tool"],
+  wrench: ["Wrench", "Tool", "Settings"],
+  repair: ["Wrench", "Tool", "Settings"],
+  fix: ["Wrench", "Tool", "Bug"],
+  build: ["Hammer", "Wrench", "Build"],
+  construct: ["Hammer", "Wrench", "Building"],
 };
+
+/**
+ * Normalize a word for fuzzy matching - removes common suffixes
+ */
+function normalizeWord(word: string): string {
+  // Remove common plural/verb endings for fuzzy matching
+  return word
+    .replace(/ing$/, '')
+    .replace(/ed$/, '')
+    .replace(/s$/, '')
+    .replace(/tion$/, 't')
+    .replace(/ly$/, '');
+}
+
+/**
+ * Check if two words are similar enough (fuzzy match)
+ */
+function fuzzyMatch(word1: string, word2: string): boolean {
+  if (word1 === word2) return true;
+  if (word1.length < 3 || word2.length < 3) return word1 === word2;
+  
+  const norm1 = normalizeWord(word1);
+  const norm2 = normalizeWord(word2);
+  
+  // Normalized match
+  if (norm1 === norm2) return true;
+  
+  // First 4+ characters match exactly (prefix matching for longer words)
+  const minLen = Math.min(norm1.length, norm2.length);
+  if (minLen >= 4 && norm1.substring(0, 4) === norm2.substring(0, 4)) {
+    return true;
+  }
+  
+  return false;
+}
 
 /**
  * Search for icons matching a query - supports both name matching and semantic/intent-based search
@@ -295,24 +494,38 @@ const semanticIconMapping: Record<string, string[]> = {
 function searchIcons(query: string, maxResults: number = 20): IconResult[] {
   const allIcons = getFluentIconNames();
   const queryLower = query.toLowerCase().trim();
-  const queryWords = queryLower.split(/\s+/);
+  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
   
   // Build a set of semantic patterns to search for based on the query
-  const semanticPatterns: Set<string> = new Set();
+  const semanticPatterns: Map<string, number> = new Map(); // pattern -> priority
   
   // Check each query word against semantic mappings
   for (const word of queryWords) {
-    // Direct semantic mapping lookup
+    // Direct semantic mapping lookup (highest priority)
     if (semanticIconMapping[word]) {
       for (const pattern of semanticIconMapping[word]) {
-        semanticPatterns.add(pattern.toLowerCase());
+        semanticPatterns.set(pattern.toLowerCase(), Math.max(semanticPatterns.get(pattern.toLowerCase()) || 0, 3));
       }
     }
-    // Also check partial matches in semantic keys
+    
+    // Fuzzy match on semantic keys
     for (const [key, patterns] of Object.entries(semanticIconMapping)) {
-      if (key.includes(word) || word.includes(key)) {
+      if (fuzzyMatch(word, key)) {
         for (const pattern of patterns) {
-          semanticPatterns.add(pattern.toLowerCase());
+          const patternLower = pattern.toLowerCase();
+          semanticPatterns.set(patternLower, Math.max(semanticPatterns.get(patternLower) || 0, 2));
+        }
+      }
+    }
+    
+    // Partial matches in semantic keys (key contains word or word contains key)
+    for (const [key, patterns] of Object.entries(semanticIconMapping)) {
+      if (key.length >= 3 && word.length >= 3 && (key.includes(word) || word.includes(key))) {
+        for (const pattern of patterns) {
+          const patternLower = pattern.toLowerCase();
+          if (!semanticPatterns.has(patternLower)) {
+            semanticPatterns.set(patternLower, 1);
+          }
         }
       }
     }
@@ -326,6 +539,7 @@ function searchIcons(query: string, maxResults: number = 20): IconResult[] {
       const baseNameLower = baseName.toLowerCase();
       
       let score = 0;
+      let bonusScore = 0;
       
       // Exact base name match (highest priority)
       if (baseNameLower === queryLower) {
@@ -343,25 +557,38 @@ function searchIcons(query: string, maxResults: number = 20): IconResult[] {
       else if (nameLower.includes(queryLower)) {
         score = 40;
       }
-      // Individual words match
+      // Individual words match (either direction)
       else {
-        const matchCount = queryWords.filter((w) => baseNameLower.includes(w)).length;
-        if (matchCount > 0) {
-          score = 20 * matchCount;
+        for (const w of queryWords) {
+          if (baseNameLower.includes(w)) {
+            score = Math.max(score, 25);
+          } else if (w.length >= 4 && baseNameLower.includes(w.substring(0, 4))) {
+            // Prefix match for longer words
+            score = Math.max(score, 15);
+          }
         }
       }
       
-      // Semantic/Intent-based matching
-      if (score === 0 && semanticPatterns.size > 0) {
-        for (const pattern of semanticPatterns) {
+      // Semantic/Intent-based matching - ALWAYS apply (additive to direct matches)
+      if (semanticPatterns.size > 0) {
+        for (const [pattern, priority] of semanticPatterns) {
           if (baseNameLower === pattern) {
-            score = Math.max(score, 70); // Exact semantic match
+            bonusScore = Math.max(bonusScore, 70 * priority / 3); // Exact semantic match
           } else if (baseNameLower.startsWith(pattern)) {
-            score = Math.max(score, 55); // Semantic starts with
+            bonusScore = Math.max(bonusScore, 55 * priority / 3); // Semantic starts with
           } else if (baseNameLower.includes(pattern)) {
-            score = Math.max(score, 45); // Semantic contains
+            bonusScore = Math.max(bonusScore, 45 * priority / 3); // Semantic contains
+          } else if (pattern.length >= 4 && baseNameLower.includes(pattern.substring(0, 4))) {
+            bonusScore = Math.max(bonusScore, 30 * priority / 3); // Semantic prefix
           }
         }
+      }
+      
+      // Combine scores - if semantic matched but direct didn't, use semantic; otherwise add bonus
+      if (score === 0 && bonusScore > 0) {
+        score = bonusScore;
+      } else if (score > 0 && bonusScore > 0) {
+        score += bonusScore * 0.3; // Boost direct matches that also match semantically
       }
       
       // Prefer Regular variant
