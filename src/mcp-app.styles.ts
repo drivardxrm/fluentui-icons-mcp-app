@@ -206,6 +206,7 @@ export const useAppStyles = makeStyles({
     transitionProperty: "all",
     transitionDuration: "0.15s",
     transitionTimingFunction: "ease",
+    position: "relative", // Required for absolute positioned badge
     ":hover": {
       ...shorthands.borderColor(tokens.colorBrandStroke1),
       transform: "translateY(-2px)",
@@ -216,49 +217,39 @@ export const useAppStyles = makeStyles({
   iconCardSelected: {
     ...shorthands.borderColor(tokens.colorBrandStroke1),
     backgroundColor: tokens.colorBrandBackground2,
-    position: "relative",
   },
 
   scoreBadge: {
     position: "absolute",
     top: "4px",
     left: "4px",
-    fontSize: "9px",
-    fontWeight: 600,
-    lineHeight: "12px",
-    minWidth: "18px",
-    height: "14px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    ...shorthands.borderRadius("3px"),
-    ...shorthands.padding("0", "3px"),
     cursor: "help",
-    opacity: 0.85,
+    fontWeight: 600,
+    minWidth: "24px",
   },
 
-  scoreBadgeSubstring: {
+  // Score badge color variants - subtle, theme-aware colors
+  scoreBadgeExcellent: {
+    // Green-ish for excellent matches (80-100)
     backgroundColor: tokens.colorPaletteGreenBackground2,
     color: tokens.colorPaletteGreenForeground2,
   },
 
-  scoreBadgeFuzzy: {
-    backgroundColor: tokens.colorPaletteBlueBorderActive,
-    color: tokens.colorNeutralForegroundOnBrand,
+  scoreBadgeGood: {
+    // Blue for good matches (50-79)
+    backgroundColor: tokens.colorNeutralBackground3,
+    color: tokens.colorBrandForeground1,
   },
 
-  scoreBadgeSemantic: {
-    backgroundColor: tokens.colorPalettePurpleBackground2,
-    color: tokens.colorPalettePurpleForeground2,
-  },
-
-  scoreBadgeVisual: {
-    backgroundColor: tokens.colorPaletteMarigoldBackground2,
-    color: tokens.colorPaletteMarigoldForeground2,
-  },
-
-  scoreBadgeWordnet: {
+  scoreBadgeModerate: {
+    // Neutral for moderate matches (25-49)
     backgroundColor: tokens.colorNeutralBackground4,
+    color: tokens.colorNeutralForeground2,
+  },
+
+  scoreBadgeWeak: {
+    // Muted for weak matches (0-24)
+    backgroundColor: tokens.colorNeutralBackground5,
     color: tokens.colorNeutralForeground3,
   },
 

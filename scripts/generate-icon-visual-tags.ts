@@ -196,7 +196,7 @@ const TAG_RULES: TagRule[] = [
   // Health & Food
   { pattern: /Heart|Health|Medical/i, tags: [67] },
   { pattern: /Food|Eat|Restaurant|Bowl|Pizza|Apple|Egg/i, tags: [68] },
-  { pattern: /Drink|Coffee|Cup|Beer|Wine/i, tags: [69] },
+  { pattern: /(?:^|(?<=[A-Z]))(?:Drink|Coffee|Cup|Beer|Wine)(?=[A-Z]|$)/, tags: [69] }, // PascalCase word boundary to avoid matching "cUp" in "Uppercase"
   { pattern: /Beaker/i, tags: [68, 1] }, // food (lab/science), circle
   
   // Nature
@@ -234,7 +234,7 @@ const TAG_RULES: TagRule[] = [
   { pattern: /Box/i, tags: [90] },
   { pattern: /Panel/i, tags: [91] },
   { pattern: /Window/i, tags: [92] },
-  { pattern: /Tab/i, tags: [93] },
+  { pattern: /(?:^|(?<=[A-Z]))Tab(?=[A-Z]|$)/, tags: [93] }, // PascalCase word boundary to avoid matching Tab inside Table
   { pattern: /Card/i, tags: [94] },
   { pattern: /List/i, tags: [95] },
   { pattern: /Grid|Gallery/i, tags: [96] },

@@ -2,7 +2,7 @@
  * @file IconCard component - displays a single icon with size toggles
  */
 import { useCallback, useMemo, useState } from "react";
-import { ToggleButton, Button, Tooltip, mergeClasses } from "@fluentui/react-components";
+import { ToggleButton, Button, Tooltip, Badge, mergeClasses } from "@fluentui/react-components";
 import { Code16Regular, DocumentAdd16Regular } from "@fluentui/react-icons";
 import { getIconComponent } from "../icon-registry";
 import { useAppStyles } from "../mcp-app.styles";
@@ -96,40 +96,53 @@ export function IconCard({
     }
   }, [displayIconName, onAddImport]);
 
-  // Get score badge info
+  // Get score badge info with breakdown tooltip
   const scoreBadgeInfo = useMemo(() => {
-    if (!icon.score || !icon.scoreLayer) return null;
+    if (icon.score === undefined) return null;
     
-    const layerDescriptions: Record<string, { label: string; description: string; styleClass: string }> = {
-      substring: {
-        label: 'S',
-        description: `Substring match (${icon.score})\nDirect text match in icon name`,
-        styleClass: styles.scoreBadgeSubstring,
-      },
-      fuzzy: {
-        label: 'F',
-        description: `Fuzzy match (${icon.score})\nTypo-tolerant name matching`,
-        styleClass: styles.scoreBadgeFuzzy,
-      },
-      semantic: {
-        label: 'M',
-        description: `Semantic match (${icon.score})\nConcept/intent mapping`,
-        styleClass: styles.scoreBadgeSemantic,
-      },
-      visual: {
-        label: 'V',
-        description: `Visual match (${icon.score})\nVisual tag matching`,
-        styleClass: styles.scoreBadgeVisual,
-      },
-      wordnet: {
-        label: 'W',
-        description: `WordNet match (${icon.score})\nDictionary synonym`,
-        styleClass: styles.scoreBadgeWordnet,
-      },
+    const score = Math.round(icon.score);
+    
+    // Determine style class based on score range (theme-aware, subtle colors)
+    let styleClass: string;
+    if (score >= 80) {
+      styleClass = styles.scoreBadgeExcellent;  // Green-ish: excellent match
+    } else if (score >= 50) {
+      styleClass = styles.scoreBadgeGood;       // Blue: good match
+    } else if (score >= 25) {
+      styleClass = styles.scoreBadgeModerate;   // Neutral: moderate match
+    } else {
+      styleClass = styles.scoreBadgeWeak;       // Muted: weak match
+    }
+    
+    // Build breakdown tooltip content
+    const layerNames: Record<string, string> = {
+      substring: 'Substring',
+      fuzzy: 'Fuzzy',
+      semantic: 'Semantic',
+      visual: 'Visual',
+      synonym: 'Synonym',
     };
     
-    return layerDescriptions[icon.scoreLayer] || null;
-  }, [icon.score, icon.scoreLayer, styles]);
+    const breakdownLines: string[] = [];
+    if (icon.scoreBreakdown) {
+      const bd = icon.scoreBreakdown;
+      if (bd.substring > 0) breakdownLines.push(`${layerNames.substring}: ${Math.round(bd.substring)}`);
+      if (bd.fuzzy > 0) breakdownLines.push(`${layerNames.fuzzy}: ${Math.round(bd.fuzzy)}`);
+      if (bd.semantic > 0) breakdownLines.push(`${layerNames.semantic}: ${Math.round(bd.semantic)}`);
+      if (bd.visual > 0) breakdownLines.push(`${layerNames.visual}: ${Math.round(bd.visual)}`);
+      if (bd.synonym > 0) breakdownLines.push(`${layerNames.synonym}: ${Math.round(bd.synonym)}`);
+    }
+    
+    const tooltipContent = breakdownLines.length > 0
+      ? `Score: ${score}/100\n\n${breakdownLines.join('\n')}`
+      : `Score: ${score}/100`;
+    
+    return {
+      score,
+      styleClass,
+      tooltipContent,
+    };
+  }, [icon.score, icon.scoreBreakdown, styles]);
 
   return (
     <div
@@ -139,13 +152,17 @@ export function IconCard({
       {/* Score badge */}
       {scoreBadgeInfo && (
         <Tooltip 
-          content={scoreBadgeInfo.description} 
+          content={<div style={{ whiteSpace: 'pre-line' }}>{scoreBadgeInfo.tooltipContent}</div>} 
           relationship="description"
           positioning="above-start"
         >
-          <div className={mergeClasses(styles.scoreBadge, scoreBadgeInfo.styleClass)}>
-            {scoreBadgeInfo.label}
-          </div>
+          <Badge
+            size="small"
+            appearance="tint"
+            className={mergeClasses(styles.scoreBadge, scoreBadgeInfo.styleClass)}
+          >
+            {scoreBadgeInfo.score}
+          </Badge>
         </Tooltip>
       )}
       

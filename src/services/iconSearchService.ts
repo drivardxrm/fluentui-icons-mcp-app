@@ -2,25 +2,18 @@
  * Icon Search Service
  * 
  * This service provides intelligent icon search capabilities for Fluent UI React icons.
- * It uses a multi-layered search strategy to find icons based on user queries:
+ * It uses a multi-layered search strategy with ADDITIVE SCORING where all layers
+ * contribute to the final score.
  * 
- * SEARCH LAYERS (in priority order):
- * 1. Direct substring matching - Finds icons containing the exact search term
- * 2. Fuzzy name matching - Uses Fuse.js for typo-tolerant name matching
- * 3. Semantic mapping - Maps concepts/intents to icon patterns (e.g., "save" → Save, Download, Disk)
- * 4. Visual tags - Matches icons by visual/conceptual characteristics
- * 5. WordNet synonyms - Expands search using dictionary synonyms
+ * SCORING WEIGHTS (max 100 points total):
+ * - Substring: 0-35 pts (direct text match, word-boundary = 35, embedded = 20)
+ * - Fuzzy: 0-15 pts (name similarity via Fuse.js)
+ * - Semantic: 0-20 pts (concept/intent mapping)
+ * - Visual: 0-20 pts (visual tag matching)
+ * - Synonym: 0-10 pts (dictionary expansion)
  * 
- * SCORING SYSTEM:
- * - Word-boundary substring match: 250 points (highest priority)
- * - Embedded substring match: 150 points
- * - Direct fuzzy match: 0-100 points (based on Fuse.js score)
- * - Semantic mapping match: 50-70 points
- * - Visual tag match: 45-60 points
- * - WordNet synonym match: 40-55 points (lowest priority)
- * 
- * The scoring ensures that icons with direct name matches always appear first,
- * while still surfacing related icons through semantic understanding.
+ * The additive scoring ensures icons matching multiple layers rank higher,
+ * while still prioritizing direct name matches.
  */
 
 import Fuse from "fuse.js";
@@ -29,6 +22,13 @@ import synonymsLib from "synonyms";
 import { FLUENT_ICON_NAMES } from "../icon-names.js";
 import { getIconSizes } from "../icon-sizes.js";
 import { TAG_DICTIONARY, ICON_VISUAL_TAGS } from "../icon-visual-tags.js";
+
+// ============================================================================
+// DEBUG CONFIGURATION
+// ============================================================================
+
+/** Enable/disable debug logging for search operations */
+const DEBUG_SEARCH = true;
 
 // ============================================================================
 // TYPES
@@ -64,6 +64,18 @@ export interface IconResult {
   category: string;
   /** List of available sizes for sized variants (e.g., ["16", "20", "24"]) */
   availableSizes?: string[];
+  /** Combined relevance score (0-100, higher = more relevant) */
+  score?: number;
+  /** Primary search layer that contributed most to the score */
+  scoreLayer?: 'exact' | 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
+  /** Breakdown of score contributions from each layer */
+  scoreBreakdown?: {
+    substring: number;  // 0-100 (exact: 100, partial: 15)
+    fuzzy: number;      // 0-15
+    semantic: number;   // 0-25
+    visual: number;     // 0-25
+    synonym: number;    // 0-20
+  };
 }
 
 // ============================================================================
@@ -685,37 +697,44 @@ const iconSearchItems: IconSearchItem[] = (FLUENT_ICON_NAMES as unknown as strin
 });
 
 /**
- * Primary Fuse.js instance for fuzzy searching icon names.
+ * Semantic keys for fuzzy matching against our semantic mapping.
+ * For example, "favorit" (typo) would match "favorite" in our mapping.
+ */
+const semanticKeys = Object.keys(semanticIconMapping);
+
+/**
+ * Creates a Fuse.js instance for fuzzy searching icon names.
  * 
  * Configuration explained:
  * - keys: Search on both baseName and full name
- * - threshold: 0.1 = strict matching (lower = stricter, 0 = exact only)
+ * - threshold: User-configurable (lower = stricter, 0 = exact only)
  * - distance: 100 = how far apart matches can be within the string
  * - includeScore: true = include match quality score in results
  * - minMatchCharLength: 2 = ignore very short matches
  * - ignoreLocation: true = match anywhere in the string, not just at start
  */
-const iconFuse = new Fuse(iconSearchItems, {
-  keys: ["baseName", "name"],
-  threshold: 0.1,
-  distance: 100,
-  includeScore: true,
-  minMatchCharLength: 2,
-  ignoreLocation: true,
-});
+function createIconFuse(threshold: number): Fuse<IconSearchItem> {
+  return new Fuse(iconSearchItems, {
+    keys: ["baseName", "name"],
+    threshold,
+    distance: 100,
+    includeScore: true,
+    minMatchCharLength: 2,
+    ignoreLocation: true,
+  });
+}
 
 /**
- * Semantic key matching Fuse instance.
- * Used to fuzzy-match user queries against our semantic mapping keys.
- * For example, "favorit" (typo) would match "favorite" in our mapping.
+ * Creates a Fuse.js instance for semantic key matching.
  */
-const semanticKeys = Object.keys(semanticIconMapping);
-const semanticFuse = new Fuse(semanticKeys, {
-  threshold: 0.1,
-  distance: 50,
-  includeScore: true,
-  minMatchCharLength: 2,
-});
+function createSemanticFuse(threshold: number): Fuse<string> {
+  return new Fuse(semanticKeys, {
+    threshold,
+    distance: 50,
+    includeScore: true,
+    minMatchCharLength: 2,
+  });
+}
 
 // ============================================================================
 // SYNONYM LOOKUP (synonyms package + WordNet fallback)
@@ -805,39 +824,80 @@ function getSynonyms(word: string): Promise<string[]> {
 // ============================================================================
 
 /**
+ * Splits a PascalCase icon name into individual word segments.
+ * Example: "DrinkBeerRegular" → ["Drink", "Beer", "Regular"]
+ */
+function splitPascalCase(name: string): string[] {
+  const words: string[] = [];
+  let currentWord = "";
+  
+  for (let i = 0; i < name.length; i++) {
+    const char = name[i];
+    if (char === char.toUpperCase() && currentWord.length > 0) {
+      words.push(currentWord);
+      currentWord = char;
+    } else {
+      currentWord += char;
+    }
+  }
+  if (currentWord.length > 0) {
+    words.push(currentWord);
+  }
+  
+  return words;
+}
+
+/**
+ * Checks if a pattern matches as a complete PascalCase word in an icon name.
+ * This prevents "Cup" from matching "cUp" inside "Uppercase".
+ * Example: containsPascalWord("DrinkCoffeeRegular", "Coffee") → true
+ * Example: containsPascalWord("TextListAbcUppercaseLtr", "Cup") → false
+ */
+function containsPascalWord(iconName: string, pattern: string): boolean {
+  const words = splitPascalCase(iconName);
+  const patternLower = pattern.toLowerCase();
+  return words.some(word => word.toLowerCase() === patternLower);
+}
+
+/**
  * Calculates a substring match score for an icon name.
  * 
- * This function checks if any query word appears as a substring in the icon name.
- * It differentiates between two types of matches:
+ * This function checks if any query word appears in the icon name.
+ * It differentiates between three types of matches:
  * 
- * 1. WORD BOUNDARY MATCH (score: 250)
- *    The search term starts at a word boundary in the PascalCase name.
- *    Example: "beer" in "DrinkBeer" - "beer" starts at the capital B
+ * 1. EXACT WORD MATCH (score: 350)
+ *    The search term matches a complete word in the PascalCase name.
+ *    Example: "beer" matches "Beer" in "DrinkBeerRegular" exactly
  *    
- * 2. EMBEDDED MATCH (score: 150)
- *    The search term appears inside a word.
- *    Example: "beer" in "GlobeError" - "beer" is embedded in "Glo[beer]ror"
- * 
- * Word boundary detection for PascalCase:
- * - Start of string (index 0)
- * - Transition from lowercase to uppercase (e.g., "k" to "B" in "DrinkBeer")
+ * 2. WORD BOUNDARY MATCH (score: 250)
+ *    The search term starts at a word boundary but doesn't complete the word.
+ *    Example: "drink" in "DrinkBeerRegular" - starts at boundary but continues
+ *    
+ * 3. EMBEDDED MATCH (score: 150)
+ *    The search term appears across word boundaries.
+ *    Example: "beer" in "GlobeErrorRegular" - spans "Glo[be]" + "[Er]ror"
  * 
  * @param iconName - The icon name to check
  * @param queryWords - Array of search term words (lowercased)
- * @returns Score (0 if no match, 150 for embedded, 250 for word-boundary)
+ * @returns Score (0=no match, 150=embedded, 250=word-boundary, 350=exact)
  */
 function getSubstringMatchScore(iconName: string, queryWords: string[]): number {
   const nameLower = iconName.toLowerCase();
+  const nameWords = splitPascalCase(iconName).map(w => w.toLowerCase());
   let bestScore = 0;
   
-  for (const word of queryWords) {
-    const idx = nameLower.indexOf(word);
+  for (const query of queryWords) {
+    // Check for EXACT word match first (highest priority)
+    if (nameWords.includes(query)) {
+      bestScore = Math.max(bestScore, 350); // Exact word match
+      continue;
+    }
+    
+    // Check for substring match
+    const idx = nameLower.indexOf(query);
     if (idx === -1) continue; // No match for this word
     
     // Determine if this is a word boundary match
-    // For PascalCase names, word boundaries occur at:
-    // 1. Start of the string
-    // 2. Uppercase letters following lowercase letters
     const beforeChar = idx > 0 ? iconName[idx - 1] : "";
     const matchChar = iconName[idx];
     
@@ -847,9 +907,9 @@ function getSubstringMatchScore(iconName: string, queryWords: string[]): number 
       (beforeChar.toUpperCase() === beforeChar && /[A-Z]/.test(beforeChar));
     
     if (isWordBoundary) {
-      bestScore = Math.max(bestScore, 250); // High score for word-boundary match
+      bestScore = Math.max(bestScore, 250); // Word-boundary match
     } else {
-      bestScore = Math.max(bestScore, 150); // Lower score for embedded match
+      bestScore = Math.max(bestScore, 150); // Embedded match
     }
   }
   
@@ -861,41 +921,16 @@ function getSubstringMatchScore(iconName: string, queryWords: string[]): number 
 // ============================================================================
 
 /**
- * Search for icons matching a query using multi-layered matching strategy.
+ * Search for icons matching a query using multi-layered ADDITIVE scoring.
  * 
- * This is the main entry point for icon search. It combines multiple search
- * strategies to provide comprehensive results:
- * 
- * SEARCH FLOW:
- * 
- * 1. DIRECT SUBSTRING MATCHING (Score: 150-250)
- *    First, scan all icons for exact substring matches.
- *    This ensures "beer" finds "DrinkBeer" even if fuzzy search would miss it.
- *    Word-boundary matches score higher (250) than embedded matches (150).
- * 
- * 2. FUZZY NAME MATCHING (Score: 0-100)
- *    Use Fuse.js to find typo-tolerant matches on icon names.
- *    "calender" would match "Calendar" despite the typo.
- *    Score is inversely proportional to Fuse.js distance score.
- * 
- * 3. SEMANTIC MAPPING (Score: 50-70)
- *    Map user intent to icon patterns using our custom mapping.
- *    "save" → searches for "Save", "Download", "Disk" icons.
- *    Also does fuzzy matching on semantic keys ("favorit" → "favorite").
- * 
- * 4. WORDNET SYNONYMS (Score: 40-55) - Always runs
- *    Expands search using dictionary synonyms from WordNet.
- *    "science" → "chemistry" → Beaker icons (via semantic bridge).
- *    "automobile" → "car" → VehicleCar icons.
- *    Semantic bridging (synonym → semantic key) scores 55.
- *    Direct synonym matching scores 40.
- * 
- * SCORING PRIORITY:
- * - Higher scores appear first in results
- * - Substring matches (150-250) beat fuzzy matches (0-100)
- * - Direct semantic matches (70) beat fuzzy semantic matches (50)
- * - WordNet→semantic bridge (55) beats direct WordNet (40)
- * - Regular variants preferred over Filled when scores are equal
+ * SCORING WEIGHTS:
+ * - Exact word match: 100 pts (trumps everything)
+ * - If no exact match, layers are additive:
+ *   - Semantic: 25 pts (concept mapping)
+ *   - Visual: 25 pts (visual tags)
+ *   - Synonym: 20 pts (dictionary expansion)
+ *   - Fuzzy: 15 pts (name similarity)
+ *   - Partial: 15 pts (word-boundary or embedded substring)
  * 
  * @param query - User's search query (can be multiple words)
  * @param maxResults - Maximum number of results to return (default: 20)
@@ -911,88 +946,130 @@ export async function searchIcons(
   const queryLower = query.toLowerCase().trim();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
   
-  // Map to track best score for each icon (icon name → score)
-  const iconScores = new Map<string, number>();
+  // Create Fuse instances with user's threshold
+  const iconFuse = createIconFuse(threshold);
+  const semanticFuse = createSemanticFuse(threshold);
+  
+  // Debug: Log search start
+  if (DEBUG_SEARCH) {
+    console.log('\n' + '='.repeat(80));
+    console.log(`🔍 SEARCH: "${query}"`);
+    console.log('='.repeat(80));
+    console.log(`   Query words: [${queryWords.join(', ')}]`);
+  }
+  
+  // Track per-layer scores for each icon (additive scoring)
+  const iconLayerScores = new Map<string, {
+    substring: number;
+    fuzzy: number;
+    semantic: number;
+    visual: number;
+    synonym: number;
+  }>();
+  
+  // Debug: Track match reasons for each icon
+  const matchReasons = new Map<string, string[]>();
+  
+  // Helper to get or create layer scores for an icon
+  const getLayerScores = (iconName: string) => {
+    let scores = iconLayerScores.get(iconName);
+    if (!scores) {
+      scores = { substring: 0, fuzzy: 0, semantic: 0, visual: 0, synonym: 0 };
+      iconLayerScores.set(iconName, scores);
+    }
+    return scores;
+  };
+  
+  // Helper to add match reason for debugging
+  const addMatchReason = (iconName: string, reason: string) => {
+    if (!DEBUG_SEARCH) return;
+    let reasons = matchReasons.get(iconName);
+    if (!reasons) {
+      reasons = [];
+      matchReasons.set(iconName, reasons);
+    }
+    if (!reasons.includes(reason)) {
+      reasons.push(reason);
+    }
+  };
   
   // -------------------------------------------------------------------------
-  // LAYER 0: Direct substring matching (highest priority)
+  // LAYER 0: Direct substring matching (exact=100, partial=15)
   // -------------------------------------------------------------------------
-  // This ensures icons containing the exact search term always appear first.
-  // Example: "beer" should find "DrinkBeerRegular" before "GlobeErrorRegular"
-  // even though both contain the letters b-e-e-r.
   for (const item of iconSearchItems) {
-    const score = getSubstringMatchScore(item.name, queryWords);
-    if (score > 0) {
-      iconScores.set(item.name, score);
+    const rawScore = getSubstringMatchScore(item.name, queryWords);
+    if (rawScore > 0) {
+      const scores = getLayerScores(item.name);
+      // Exact word (350) → 100 pts, Word-boundary/Embedded → 15 pts (partial)
+      let substringScore = 15; // Default: partial match
+      if (rawScore >= 350) {
+        substringScore = 100; // Exact word match
+      }
+      // Word-boundary (250) and embedded (150) both count as partial = 15 pts
+      scores.substring = Math.max(scores.substring, substringScore);
     }
   }
   
   // -------------------------------------------------------------------------
-  // LAYER 1: Fuzzy name matching with Fuse.js
+  // LAYER 1: Fuzzy name matching with Fuse.js (max 15 pts)
   // -------------------------------------------------------------------------
-  // Create a temporary Fuse instance with the user-specified threshold.
-  // This allows runtime adjustment of fuzzy matching strictness.
-  const searchFuse = new Fuse(iconSearchItems, {
-    keys: ["baseName", "name"],
-    threshold: threshold,
-    distance: 100,
-    includeScore: true,
-    minMatchCharLength: 2,
-    ignoreLocation: true,
-  });
-  
-  // Search and score results
-  const directResults = searchFuse.search(queryLower, { limit: maxResults * 2 });
+  const directResults = iconFuse.search(queryLower, { limit: maxResults * 3 });
   for (const result of directResults) {
-    // Convert Fuse score (0 = perfect, 1 = worst) to our scale (100 = perfect, 0 = worst)
-    const score = 100 - (result.score || 0) * 100;
-    
-    // Only update if not already set by substring match (which has higher score)
-    const existingScore = iconScores.get(result.item.name) || 0;
-    if (score > existingScore) {
-      iconScores.set(result.item.name, score);
-    }
+    const scores = getLayerScores(result.item.name);
+    // Fuse score (0=perfect, 1=worst) → 0-15 pts
+    const fuzzyScore = (1 - (result.score || 0)) * 15;
+    scores.fuzzy = Math.max(scores.fuzzy, fuzzyScore);
   }
   
   // -------------------------------------------------------------------------
-  // LAYER 2: Semantic/intent-based search
+  // LAYER 2: Semantic/intent-based search (max 25 pts)
   // -------------------------------------------------------------------------
-  // This layer maps user concepts to icon patterns using our custom mapping.
+  if (DEBUG_SEARCH) console.log('\n🧠 LAYER 2: Semantic Matching');
+  
   for (const word of queryWords) {
-    // 2a. Direct semantic key match
-    // If the word exactly matches a semantic key, search for all mapped patterns
+    // 2a. Direct semantic key match → max 25 pts
     if (semanticIconMapping[word]) {
+      if (DEBUG_SEARCH) {
+        console.log(`   Direct semantic: "${word}" → [${semanticIconMapping[word].join(', ')}]`);
+      }
       for (const pattern of semanticIconMapping[word]) {
         const semanticResults = iconFuse.search(pattern, { limit: 10 });
         for (const result of semanticResults) {
-          // Semantic matches score slightly lower than direct matches
-          const score = 70 - (result.score || 0) * 50;
-          iconScores.set(
-            result.item.name, 
-            Math.max(iconScores.get(result.item.name) || 0, score)
-          );
+          // Only score if the pattern matches as a complete PascalCase word
+          // This prevents "Cup" from matching "cUp" in "Uppercase"
+          if (!containsPascalWord(result.item.name, pattern)) continue;
+          
+          const scores = getLayerScores(result.item.name);
+          const semanticScore = 25 * (1 - (result.score || 0));
+          scores.semantic = Math.max(scores.semantic, semanticScore);
+          addMatchReason(result.item.name, `Semantic: "${word}" → "${pattern}"`);
         }
       }
     }
     
-    // 2b. Fuzzy semantic key match
-    // Try to match the word against semantic keys with typo tolerance
-    // This handles cases like "favorit" → "favorite"
+    // 2b. Fuzzy semantic key match → max 18 pts
     const fuzzySemanticMatches = semanticFuse.search(word, { limit: 5 });
     for (const semanticMatch of fuzzySemanticMatches) {
       const semanticKey = semanticMatch.item;
       const patterns = semanticIconMapping[semanticKey];
       
       if (patterns) {
+        if (DEBUG_SEARCH && semanticKey !== word) {
+          console.log(`   Fuzzy semantic: "${word}" ≈ "${semanticKey}" → [${patterns.slice(0, 5).join(', ')}${patterns.length > 5 ? '...' : ''}]`);
+        }
         for (const pattern of patterns) {
           const semanticResults = iconFuse.search(pattern, { limit: 8 });
           for (const result of semanticResults) {
-            // Lower score for fuzzy semantic matches (double fuzzy penalty)
-            const score = 50 - (result.score || 0) * 30 - (semanticMatch.score || 0) * 20;
-            iconScores.set(
-              result.item.name, 
-              Math.max(iconScores.get(result.item.name) || 0, score)
-            );
+            // Only score if the pattern matches as a complete PascalCase word
+            if (!containsPascalWord(result.item.name, pattern)) continue;
+            
+            const scores = getLayerScores(result.item.name);
+            // Double penalty for fuzzy semantic (semantic key fuzziness + icon name fuzziness)
+            const semanticScore = 18 * (1 - (result.score || 0)) * (1 - (semanticMatch.score || 0));
+            scores.semantic = Math.max(scores.semantic, semanticScore);
+            if (semanticKey !== word) {
+              addMatchReason(result.item.name, `Fuzzy semantic: "${word}" ≈ "${semanticKey}" → "${pattern}"`);
+            }
           }
         }
       }
@@ -1000,103 +1077,95 @@ export async function searchIcons(
   }
   
   // -------------------------------------------------------------------------
-  // LAYER 3: Synonym expansion (synonyms package + WordNet fallback)
+  // LAYER 3: Synonym expansion (max 20 pts)
   // -------------------------------------------------------------------------
-  // Synonym expansion helps discover related concepts even when we have
-  // some results. For example, "science" → "chemistry" → Beaker icons.
-  // This bridges terms that aren't in our semantic mapping through dictionary
-  // relationships.
+  if (DEBUG_SEARCH) console.log('\n📖 LAYER 3: Synonym Expansion');
+  
   for (const word of queryWords) {
     const synonyms = await getSynonyms(word);
     
-    // Debug logging - helps diagnose synonym expansion
-    if (synonyms.length > 0) {
-      console.log(`[Synonyms] "${word}" → [${synonyms.join(", ")}]`);
+    if (DEBUG_SEARCH) {
+      if (synonyms.length > 0) {
+        console.log(`   "${word}" → [${synonyms.join(", ")}]`);
+      } else {
+        console.log(`   "${word}" → (no synonyms found)`);
+      }
     }
     
     for (const synonym of synonyms) {
-      // 3a. Check if synonym matches a semantic key (PRIORITY)
-      // This bridges WordNet → our custom mapping
-      // e.g., "science" → WordNet "chemistry" → semantic "chemistry" → Beaker
+      // 3a. Synonym → semantic key bridge → max 20 pts
       if (semanticIconMapping[synonym]) {
         for (const pattern of semanticIconMapping[synonym]) {
           const semanticResults = iconFuse.search(pattern, { limit: 8 });
           for (const result of semanticResults) {
-            // Higher score for semantic bridging (55) than direct WordNet search (40)
-            const score = 55 - (result.score || 0) * 30;
-            iconScores.set(
-              result.item.name, 
-              Math.max(iconScores.get(result.item.name) || 0, score)
-            );
+            const scores = getLayerScores(result.item.name);
+            const synonymScore = 20 * (1 - (result.score || 0));
+            scores.synonym = Math.max(scores.synonym, synonymScore);
+            addMatchReason(result.item.name, `Synonym: "${word}" → "${synonym}" → semantic "${pattern}"`);
           }
         }
       }
       
-      // 3b. Search icons directly with the synonym
+      // 3b. Direct synonym → icon match → max 14 pts
       const synonymResults = iconFuse.search(synonym, { limit: 5 });
       for (const result of synonymResults) {
-        // WordNet direct matches score lower than semantic matches
-        const score = 40 - (result.score || 0) * 30;
-        iconScores.set(
-          result.item.name, 
-          Math.max(iconScores.get(result.item.name) || 0, score)
-        );
+        const scores = getLayerScores(result.item.name);
+        const synonymScore = 14 * (1 - (result.score || 0));
+        scores.synonym = Math.max(scores.synonym, synonymScore);
+        addMatchReason(result.item.name, `Synonym: "${word}" → "${synonym}" → fuzzy`);
       }
     }
   }
   
   // -------------------------------------------------------------------------
-  // LAYER 4: Visual tag matching
+  // LAYER 4: Visual tag matching (max 25 pts)
   // -------------------------------------------------------------------------
-  // Match icons by visual/conceptual characteristics.
-  // This finds icons that LOOK like or represent the search term,
-  // even if the name doesn't contain it.
-  // Example: "circular" → finds Circle, Record, Sun icons
-  //          "navigation" → finds Arrow, Compass, Map icons
+  if (DEBUG_SEARCH) console.log('\n🎨 LAYER 4: Visual Tag Matching');
+  
   for (const word of queryWords) {
-    // 4a. Direct tag match - word matches a visual tag exactly
+    // 4a. Direct tag match → 25 pts
     const tagIndex = TAG_DICTIONARY.indexOf(word);
     if (tagIndex !== -1) {
-      // Find all icons with this tag
+      if (DEBUG_SEARCH) {
+        console.log(`   Direct tag: "${word}" (index ${tagIndex})`);
+      }
       for (const [baseName, tags] of Object.entries(ICON_VISUAL_TAGS)) {
         if (tags.includes(tagIndex)) {
-          // Add both Regular and Filled variants
           for (const variant of ["Regular", "Filled"]) {
             const iconName = baseName + variant;
             if ((FLUENT_ICON_NAMES as readonly string[]).includes(iconName)) {
-              const score = 60; // Visual tag direct match
-              iconScores.set(
-                iconName,
-                Math.max(iconScores.get(iconName) || 0, score)
-              );
+              const scores = getLayerScores(iconName);
+              scores.visual = Math.max(scores.visual, 25);
+              addMatchReason(iconName, `Visual tag: "${word}"`);
             }
           }
         }
       }
     }
     
-    // 4b. Fuzzy tag match - find tags similar to the search word
+    // 4b. Fuzzy tag match → max 18 pts (uses user's threshold)
     const tagFuseResults = new Fuse(TAG_DICTIONARY, {
-      threshold: 0.3,
+      threshold,
       includeScore: true,
     }).search(word, { limit: 3 });
+    
+    if (DEBUG_SEARCH && tagFuseResults.length > 0) {
+      console.log(`   Fuzzy tags for "${word}": [${tagFuseResults.map(t => `"${t.item}" (${((1 - (t.score || 0)) * 100).toFixed(0)}%)`).join(', ')}]`);
+    }
     
     for (const tagMatch of tagFuseResults) {
       const matchedTagIndex = TAG_DICTIONARY.indexOf(tagMatch.item);
       if (matchedTagIndex === -1) continue;
       
-      // Find icons with this tag
       for (const [baseName, tags] of Object.entries(ICON_VISUAL_TAGS)) {
         if (tags.includes(matchedTagIndex)) {
           for (const variant of ["Regular", "Filled"]) {
             const iconName = baseName + variant;
             if ((FLUENT_ICON_NAMES as readonly string[]).includes(iconName)) {
-              // Score decreases with fuzzy distance
-              const score = 45 - (tagMatch.score || 0) * 30;
-              iconScores.set(
-                iconName,
-                Math.max(iconScores.get(iconName) || 0, score)
-              );
+              const scores = getLayerScores(iconName);
+              const visualScore = 18 * (1 - (tagMatch.score || 0));
+              scores.visual = Math.max(scores.visual, visualScore);
+              addMatchReason(iconName, `Fuzzy visual: "${word}" ≈ "${tagMatch.item}"`);
             }
           }
         }
@@ -1105,39 +1174,93 @@ export async function searchIcons(
   }
   
   // -------------------------------------------------------------------------
-  // SORT AND FORMAT RESULTS
+  // CALCULATE FINAL ADDITIVE SCORES AND SORT
   // -------------------------------------------------------------------------
-  const sortedIcons = [...iconScores.entries()]
-    .sort((a, b) => {
-      // Primary sort: by score (higher is better)
-      if (b[1] !== a[1]) return b[1] - a[1];
+  const finalScores: Array<[string, number, { substring: number; fuzzy: number; semantic: number; visual: number; synonym: number }]> = [];
+  
+  for (const [iconName, layers] of iconLayerScores.entries()) {
+    const totalScore = Math.min(100, 
+      layers.substring + layers.fuzzy + layers.semantic + layers.visual + layers.synonym
+    );
+    
+    if (totalScore > 0) {
+      finalScores.push([iconName, totalScore, layers]);
+    }
+  }
+  
+  finalScores.sort((a, b) => {
+    // Primary sort: by total score (higher is better)
+    if (b[1] !== a[1]) return b[1] - a[1];
+    
+    // Secondary sort: prefer "Regular" variant over "Filled"
+    const aRegular = a[0].endsWith("Regular") ? 1 : 0;
+    const bRegular = b[0].endsWith("Regular") ? 1 : 0;
+    return bRegular - aRegular;
+  });
+  
+  const topResults = finalScores.slice(0, maxResults);
+  
+  // -------------------------------------------------------------------------
+  // DEBUG: Print results table
+  // -------------------------------------------------------------------------
+  if (DEBUG_SEARCH) {
+    console.log('\n' + '='.repeat(90));
+    console.log('📊 RESULTS');
+    console.log('='.repeat(90));
+    console.log(
+      '#'.padEnd(4) +
+      'Icon Name'.padEnd(40) +
+      'Total'.padStart(6) +
+      'Sub'.padStart(5) +
+      'Fuz'.padStart(5) +
+      'Sem'.padStart(5) +
+      'Vis'.padStart(5) +
+      'Syn'.padStart(5)
+    );
+    console.log('-'.repeat(90));
+    
+    topResults.forEach(([name, total, layers], i) => {
+      console.log(
+        `${(i + 1).toString().padEnd(4)}` +
+        `${name.substring(0, 39).padEnd(40)}` +
+        `${total.toFixed(0).padStart(6)}` +
+        `${layers.substring > 0 ? layers.substring.toFixed(0) : '-'.padStart(5)}`.padStart(5) +
+        `${layers.fuzzy > 0 ? layers.fuzzy.toFixed(0) : '-'.padStart(5)}`.padStart(5) +
+        `${layers.semantic > 0 ? layers.semantic.toFixed(0) : '-'.padStart(5)}`.padStart(5) +
+        `${layers.visual > 0 ? layers.visual.toFixed(0) : '-'.padStart(5)}`.padStart(5) +
+        `${layers.synonym > 0 ? layers.synonym.toFixed(0) : '-'.padStart(5)}`.padStart(5)
+      );
       
-      // Secondary sort: prefer "Regular" variant over "Filled"
-      // This is a UX decision - Regular is typically the default style
-      const aRegular = a[0].endsWith("Regular") ? 1 : 0;
-      const bRegular = b[0].endsWith("Regular") ? 1 : 0;
-      return bRegular - aRegular;
-    })
-    .slice(0, maxResults);
+      // Print match reasons
+      const reasons = matchReasons.get(name);
+      if (reasons && reasons.length > 0) {
+        console.log(`     └─ ${reasons.join(' | ')}`);
+      }
+    });
+    
+    console.log('='.repeat(90) + '\n');
+  }
   
   // Transform to IconResult format
-  return sortedIcons.map(([name, score]) => {
+  return topResults.map(([name, totalScore, layers]) => {
     const { baseName, variant } = parseIconName(name);
     const availableSizes = getIconSizes(name);
     
-    // Determine which layer produced this score
-    // Priority order: substring > semantic > visual > wordnet > fuzzy
-    let scoreLayer: 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
-    if (score >= 150) {
-      scoreLayer = 'substring'; // 150-250: direct substring match
-    } else if (score >= 50 && score <= 70) {
-      scoreLayer = 'semantic'; // 50-70: semantic mapping
-    } else if (score >= 45 && score < 50) {
-      scoreLayer = 'visual'; // 45-60: visual tag match (lower range)
-    } else if (score >= 40 && score < 45) {
-      scoreLayer = 'wordnet'; // 40-55: WordNet synonyms (lower range)
+    // Determine primary layer (highest contributor)
+    // Special case: exact word match (substring = 100) gets 'exact' layer label
+    let primaryLayer: 'exact' | 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
+    
+    if (layers.substring >= 100) {
+      primaryLayer = 'exact';
     } else {
-      scoreLayer = 'fuzzy'; // 0-100: fuzzy name match (fallback)
+      const layerContributions = [
+        { layer: 'substring' as const, score: layers.substring },
+        { layer: 'fuzzy' as const, score: layers.fuzzy },
+        { layer: 'semantic' as const, score: layers.semantic },
+        { layer: 'visual' as const, score: layers.visual },
+        { layer: 'wordnet' as const, score: layers.synonym },
+      ];
+      primaryLayer = layerContributions.reduce((a, b) => a.score >= b.score ? a : b).layer;
     }
     
     return {
@@ -1146,8 +1269,15 @@ export async function searchIcons(
       importStatement: `import { ${name} } from "@fluentui/react-icons";`,
       category: variant || "Icon",
       availableSizes,
-      score: Math.round(score),
-      scoreLayer,
+      score: Math.round(totalScore),
+      scoreLayer: primaryLayer,
+      scoreBreakdown: {
+        substring: Math.round(layers.substring),
+        fuzzy: Math.round(layers.fuzzy),
+        semantic: Math.round(layers.semantic),
+        visual: Math.round(layers.visual),
+        synonym: Math.round(layers.synonym),
+      },
     };
   });
 }

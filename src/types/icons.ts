@@ -11,10 +11,18 @@ export interface IconResult {
   importStatement: string;
   category: string;
   availableSizes?: string[];
-  /** Relevance score (higher = more relevant) */
+  /** Combined relevance score (0-100, higher = more relevant) */
   score?: number;
-  /** Which search layer produced the score */
-  scoreLayer?: 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
+  /** Primary search layer that contributed most to the score */
+  scoreLayer?: 'exact' | 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
+  /** Breakdown of score contributions from each layer */
+  scoreBreakdown?: {
+    substring: number;  // 0-100 (exact: 100, partial: 15)
+    fuzzy: number;      // 0-15
+    semantic: number;   // 0-25
+    visual: number;     // 0-25
+    synonym: number;    // 0-20
+  };
 }
 
 /**
