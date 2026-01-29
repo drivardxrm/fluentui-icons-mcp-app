@@ -3,8 +3,9 @@
 An MCP App for exploring and searching **Fluent UI React V9 icons** from `@fluentui/react-icons`.
 
 <img width="783" height="1075" alt="image" src="https://github.com/user-attachments/assets/4e690a63-3787-49c1-a962-1c508c1bdf25" />
-
-
+<br />
+<br />
+<img width="377" height="308" alt="image" src="https://github.com/user-attachments/assets/fcec4455-b474-4976-b330-683284dc91ce" />
 
 
 ## Features
@@ -151,7 +152,7 @@ The search uses **multi-layered additive scoring** where all matching layers con
 Click the **ℹ️ Scoring** button in the header to see this breakdown in the UI.
 
 #### How Scoring Works
-<img width="377" height="308" alt="image" src="https://github.com/user-attachments/assets/fcec4455-b474-4976-b330-683284dc91ce" />
+
 
 
 1. **Additive scoring**: Each layer adds points independently. An icon matching multiple layers scores higher than one matching a single layer.
