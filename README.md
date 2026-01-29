@@ -131,10 +131,25 @@ Search for Fluent UI icons by name or description.
 
 ```typescript
 {
-  query: string;      // Search query (e.g., "add", "calendar", "arrow")
+  query: string;       // Search query (e.g., "add", "calendar", "arrow")
   maxResults?: number; // Max results (default: 20)
+  threshold?: number;  // Fuzzy matching threshold 0-1 (default: 0.1, lower = stricter)
 }
 ```
+
+### Search Algorithm
+
+The search uses **multi-layered additive scoring** where all matching layers contribute to the final score (capped at 100):
+
+| Layer | Max Points | Description |
+|-------|------------|-------------|
+| **Substring** | 100 | Exact word match in icon name gets 100 pts, partial matches get 15 pts |
+| **Semantic** | 25 | Concept mapping (e.g., "save" → Save, Download, Disk icons) |
+| **Visual** | 25 | Visual tag matching from curated icon descriptions |
+| **Synonym** | 20 | Dictionary expansion via WordNet (e.g., "trash" → "delete") |
+| **Fuzzy** | 15 | Fuse.js name similarity for typo tolerance |
+
+Icons matching multiple layers rank higher. The `threshold` parameter controls fuzzy matching strictness across all layers.
 
 ### Example Prompts
 
@@ -156,12 +171,27 @@ fluentui-icons-mcp-app/
 │   ├── icon-registry.tsx  # 5,684 explicit icon imports
 │   ├── icon-names.ts      # Static list of unsized icon names
 │   ├── icon-sizes.ts      # Mapping of base names to available sizes
-│   ├── assets/
-│   │   └── mcp.png        # MCP logo
-│   └── vite-env.d.ts      # TypeScript declarations
+│   ├── icon-visual-tags.ts # Visual tags for semantic search
+│   ├── components/        # React UI components
+│   │   ├── Header.tsx
+│   │   ├── SearchBar.tsx
+│   │   ├── IconsGrid.tsx
+│   │   ├── IconCard.tsx
+│   │   └── DetailPanel.tsx
+│   ├── services/
+│   │   └── iconSearchService.ts  # Multi-layer search algorithm
+│   ├── types/
+│   │   └── icons.ts       # TypeScript type definitions
+│   ├── utils/
+│   │   ├── iconHelpers.ts
+│   │   └── parseToolResult.ts
+│   └── assets/
+│       └── mcp.png        # MCP logo
 ├── scripts/
-│   ├── generate-icon-list.ts   # Generate icon names
-│   └── generate-icon-sizes.ts  # Generate size mappings
+│   ├── generate-icon-list.ts      # Generate icon names
+│   ├── generate-icon-sizes.ts     # Generate size mappings
+│   ├── generate-icon-registry.ts  # Generate icon imports
+│   └── generate-icon-visual-tags.ts # Generate visual tags
 ├── package.json
 ├── tsconfig.json
 ├── tsconfig.server.json

@@ -5,15 +5,15 @@
  * It uses a multi-layered search strategy with ADDITIVE SCORING where all layers
  * contribute to the final score.
  * 
- * SCORING WEIGHTS (max 100 points total):
- * - Substring: 0-35 pts (direct text match, word-boundary = 35, embedded = 20)
- * - Fuzzy: 0-15 pts (name similarity via Fuse.js)
- * - Semantic: 0-20 pts (concept/intent mapping)
- * - Visual: 0-20 pts (visual tag matching)
- * - Synonym: 0-10 pts (dictionary expansion)
+ * SCORING WEIGHTS (capped at 100 points total):
+ * - Substring: 0-100 pts (exact word match = 100, partial/embedded = 15)
+ * - Semantic: 0-25 pts (concept mapping, direct = 25, fuzzy key = 18)
+ * - Visual: 0-25 pts (visual tag matching, direct = 25, fuzzy = 18)
+ * - Synonym: 0-20 pts (dictionary expansion, direct = 20, fuzzy = 14)
+ * - Fuzzy: 0-15 pts (Fuse.js name similarity)
  * 
  * The additive scoring ensures icons matching multiple layers rank higher,
- * while still prioritizing direct name matches.
+ * while exact word matches get maximum priority (100 pts).
  */
 
 import Fuse from "fuse.js";
@@ -70,11 +70,11 @@ export interface IconResult {
   scoreLayer?: 'exact' | 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
   /** Breakdown of score contributions from each layer */
   scoreBreakdown?: {
-    substring: number;  // 0-100 (exact: 100, partial: 15)
-    fuzzy: number;      // 0-15
-    semantic: number;   // 0-25
-    visual: number;     // 0-25
-    synonym: number;    // 0-20
+    substring: number;  // 0-100 (exact word = 100, partial = 15)
+    fuzzy: number;      // 0-15 (Fuse.js name similarity)
+    semantic: number;   // 0-25 (concept mapping)
+    visual: number;     // 0-25 (visual tag matching)
+    synonym: number;    // 0-20 (dictionary expansion)
   };
 }
 
