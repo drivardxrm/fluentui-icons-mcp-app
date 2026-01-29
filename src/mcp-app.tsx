@@ -225,6 +225,9 @@ function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
     return getSizedIconName(icon.name, selectedSize);
   }, [icon.name, selectedSize]);
   
+  // Calculate icon size in pixels (unsized = 32px)
+  const iconSizePx = selectedSize ? parseInt(selectedSize, 10) : 32;
+  
   const IconComponent = getIconComponent(icon.name);
   
   const handleSizeClick = useCallback((size: string | null, e: React.MouseEvent) => {
@@ -247,7 +250,7 @@ function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
       onClick={handleCardClick}
     >
       <div className={styles.iconPreview}>
-        {IconComponent ? <IconComponent /> : "?"}
+        {IconComponent ? <IconComponent style={{ fontSize: `${iconSizePx}px` }} /> : "?"}
       </div>
       <div className={styles.iconName}>{displayIconName}</div>
       <div className={styles.iconVariant}>{icon.category}</div>
