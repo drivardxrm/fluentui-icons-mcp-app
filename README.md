@@ -2,7 +2,12 @@
 
 An MCP App for exploring and searching **Fluent UI React V9 icons** from `@fluentui/react-icons`.
 
-![MCP App](src/assets/mcp.png)
+<img width="970" height="738" alt="image" src="https://github.com/user-attachments/assets/5f2bdd96-f518-4be3-9bc4-930f78099147" />
+
+
+<img width="871" height="425" alt="image" src="https://github.com/user-attachments/assets/3fb0247b-bab6-4100-a6b5-074183605744" />
+
+
 
 ## Features
 
@@ -11,6 +16,8 @@ An MCP App for exploring and searching **Fluent UI React V9 icons** from `@fluen
 - 👀 **Visual Preview** - See icons rendered in a grid with live previews
 - 📋 **Copy Code** - Get ready-to-use JSX and import statements
 - 📥 **Add Import** - Insert import statements directly into your code via Copilot
+<img width="974" height="475" alt="image" src="https://github.com/user-attachments/assets/94324d86-0ae6-48c2-815c-21c1cc1ec91a" />
+
 - 🌙 **Dark/Light Mode** - Toggle between themes with persistent preference
 - 🎨 **Fluent UI Styling** - Built with Griffel and Fluent UI tokens
 
