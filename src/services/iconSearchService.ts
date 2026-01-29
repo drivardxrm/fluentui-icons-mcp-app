@@ -644,7 +644,49 @@ const semanticIconMapping: Record<string, string[]> = {
   fix: ["Wrench", "Tool", "Bug"],
   build: ["Hammer", "Wrench", "Build"],
   construct: ["Hammer", "Wrench", "Building"],
+  
+  // -------------------------------------------------------------------------
+  // SHAPES & GEOMETRY
+  // -------------------------------------------------------------------------
+  round: ["Circle", "Oval", "Globe", "Orb", "Sphere", "Record"],
+  circular: ["Circle", "Oval", "Globe", "Record"],
+  sphere: ["Circle", "Globe", "Orb"],
+  ball: ["Circle", "Globe", "Sport"],
+  oval: ["Circle", "Oval", "Ellipse"],
+  square: ["Square", "Box", "Rectangle", "Checkbox"],
+  rectangle: ["Rectangle", "Square", "Box", "Panel"],
+  triangle: ["Triangle", "Alert", "Warning", "Caret"],
+  diamond: ["Diamond", "Square", "Rhombus"],
+  hexagon: ["Hexagon", "Shape"],
+  pentagon: ["Pentagon", "Shape"],
+  octagon: ["Octagon", "Stop"],
+  ring: ["Circle", "Ring"],
+  dot: ["Circle", "Record", "MoreHorizontal"],
+  point: ["Circle", "Location", "Pin"],
 };
+
+/**
+ * Derives visual tag matches from semanticIconMapping.
+ * If a query word is in semanticIconMapping, checks if any of its
+ * target terms (lowercased) exist in TAG_DICTIONARY.
+ * This keeps semantic mappings and visual tag matching in sync.
+ * 
+ * @param word - The query word to find tag matches for
+ * @returns Array of matching tag indices in TAG_DICTIONARY
+ */
+function getTagIndicesFromSemanticMapping(word: string): number[] {
+  const semanticTargets = semanticIconMapping[word];
+  if (!semanticTargets) return [];
+  
+  const tagIndices: number[] = [];
+  for (const target of semanticTargets) {
+    const tagIndex = TAG_DICTIONARY.indexOf(target.toLowerCase());
+    if (tagIndex !== -1) {
+      tagIndices.push(tagIndex);
+    }
+  }
+  return tagIndices;
+}
 
 // ============================================================================
 // ICON NAME PARSING
@@ -1120,19 +1162,41 @@ export async function searchIcons(
   
   for (const word of queryWords) {
     // 4a. Direct tag match → 25 pts
-    const tagIndex = TAG_DICTIONARY.indexOf(word);
-    if (tagIndex !== -1) {
+    const directTagIndex = TAG_DICTIONARY.indexOf(word);
+    
+    // 4b. Derived tag matches from semantic mapping → 25 pts
+    // If "round" maps to ["Circle", ...] in semanticIconMapping,
+    // and "circle" is in TAG_DICTIONARY, we match on that tag
+    const derivedTagIndices = getTagIndicesFromSemanticMapping(word);
+    
+    // Combine direct and derived tag indices (deduped)
+    const allTagIndices = new Set<number>();
+    if (directTagIndex !== -1) allTagIndices.add(directTagIndex);
+    derivedTagIndices.forEach(i => allTagIndices.add(i));
+    
+    if (allTagIndices.size > 0) {
       if (DEBUG_SEARCH) {
-        console.log(`   Direct tag: "${word}" (index ${tagIndex})`);
+        const tagNames = [...allTagIndices].map(i => TAG_DICTIONARY[i]);
+        const derivedInfo = derivedTagIndices.length > 0 
+          ? ` (via semantic: ${derivedTagIndices.map(i => TAG_DICTIONARY[i]).join(', ')})` 
+          : '';
+        console.log(`   Tags for "${word}": [${tagNames.join(', ')}]${derivedInfo}`);
       }
-      for (const [baseName, tags] of Object.entries(ICON_VISUAL_TAGS)) {
-        if (tags.includes(tagIndex)) {
-          for (const variant of ["Regular", "Filled"]) {
-            const iconName = baseName + variant;
-            if ((FLUENT_ICON_NAMES as readonly string[]).includes(iconName)) {
-              const scores = getLayerScores(iconName);
-              scores.visual = Math.max(scores.visual, 25);
-              addMatchReason(iconName, `Visual tag: "${word}"`);
+      
+      for (const tagIndex of allTagIndices) {
+        for (const [baseName, tags] of Object.entries(ICON_VISUAL_TAGS)) {
+          if (tags.includes(tagIndex)) {
+            for (const variant of ["Regular", "Filled"]) {
+              const iconName = baseName + variant;
+              if ((FLUENT_ICON_NAMES as readonly string[]).includes(iconName)) {
+                const scores = getLayerScores(iconName);
+                scores.visual = Math.max(scores.visual, 25);
+                const tagName = TAG_DICTIONARY[tagIndex];
+                const reason = derivedTagIndices.includes(tagIndex)
+                  ? `Visual tag: "${word}" → "${tagName}"`
+                  : `Visual tag: "${tagName}"`;
+                addMatchReason(iconName, reason);
+              }
             }
           }
         }
