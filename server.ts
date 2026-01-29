@@ -2,11 +2,15 @@ import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@model
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult, ReadResourceResult } from "@modelcontextprotocol/sdk/types.js";
 import Fuse from "fuse.js";
+import natural from "natural";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { FLUENT_ICON_NAMES } from "./src/icon-names.js";
 import { getIconSizes } from "./src/icon-sizes.js";
+
+// Initialize WordNet for synonym lookup
+const wordnet = new natural.WordNet();
 
 // Works both from source (server.ts) and compiled (dist/server.js)
 const DIST_DIR = import.meta.filename.endsWith(".ts")
@@ -492,10 +496,42 @@ const semanticFuse = new Fuse(semanticKeys, {
   minMatchCharLength: 2,
 });
 
+// Cache for WordNet synonyms to avoid repeated lookups
+const synonymCache = new Map<string, string[]>();
+
+/**
+ * Get synonyms for a word using WordNet (async with caching)
+ */
+function getSynonyms(word: string): Promise<string[]> {
+  const cached = synonymCache.get(word);
+  if (cached !== undefined) {
+    return Promise.resolve(cached);
+  }
+  
+  return new Promise((resolve) => {
+    const synonyms: string[] = [];
+    wordnet.lookup(word, (results) => {
+      for (const result of results) {
+        // Get synonyms from the synset
+        for (const synonym of result.synonyms) {
+          const clean = synonym.toLowerCase().replace(/_/g, '');
+          if (clean !== word && clean.length >= 3 && !synonyms.includes(clean)) {
+            synonyms.push(clean);
+          }
+        }
+      }
+      // Limit to top 10 synonyms
+      const limited = synonyms.slice(0, 10);
+      synonymCache.set(word, limited);
+      resolve(limited);
+    });
+  });
+}
+
 /**
  * Search for icons matching a query - supports both name matching and semantic/intent-based search
  */
-function searchIcons(query: string, maxResults: number = 20): IconResult[] {
+async function searchIcons(query: string, maxResults: number = 20): Promise<IconResult[]> {
   const queryLower = query.toLowerCase().trim();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
   
@@ -509,7 +545,7 @@ function searchIcons(query: string, maxResults: number = 20): IconResult[] {
     iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
   }
   
-  // 2. Semantic/intent-based search
+  // 2. Semantic/intent-based search (custom mappings first)
   for (const word of queryWords) {
     // Direct semantic key match
     if (semanticIconMapping[word]) {
@@ -535,6 +571,35 @@ function searchIcons(query: string, maxResults: number = 20): IconResult[] {
             // Lower score for fuzzy semantic matches
             const score = 50 - (result.score || 0) * 30 - (semanticMatch.score || 0) * 20;
             iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
+          }
+        }
+      }
+    }
+  }
+  
+  // 3. WordNet synonyms as fallback (only if we have few results)
+  if (iconScores.size < maxResults) {
+    for (const word of queryWords) {
+      // Skip if we already have custom mapping for this word
+      if (semanticIconMapping[word]) continue;
+      
+      const synonyms = await getSynonyms(word);
+      for (const synonym of synonyms) {
+        // Search icons directly with the synonym
+        const synonymResults = iconFuse.search(synonym, { limit: 5 });
+        for (const result of synonymResults) {
+          const score = 40 - (result.score || 0) * 30; // WordNet matches score lower
+          iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
+        }
+        
+        // Also check if synonym matches a custom semantic key
+        if (semanticIconMapping[synonym]) {
+          for (const pattern of semanticIconMapping[synonym]) {
+            const semanticResults = iconFuse.search(pattern, { limit: 5 });
+            for (const result of semanticResults) {
+              const score = 45 - (result.score || 0) * 30;
+              iconScores.set(result.item.name, Math.max(iconScores.get(result.item.name) || 0, score));
+            }
           }
         }
       }
@@ -598,11 +663,11 @@ export function createServer(): McpServer {
       },
       _meta: { ui: { resourceUri } },
     },
-    (args): CallToolResult => {
+    async (args): Promise<CallToolResult> => {
       const { query, maxResults = 20 } = args;
       
       try {
-        const results = searchIcons(query, maxResults);
+        const results = await searchIcons(query, maxResults);
         
         if (results.length === 0) {
           return {
