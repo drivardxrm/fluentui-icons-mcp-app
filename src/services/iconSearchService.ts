@@ -8,14 +8,16 @@
  * 1. Direct substring matching - Finds icons containing the exact search term
  * 2. Fuzzy name matching - Uses Fuse.js for typo-tolerant name matching
  * 3. Semantic mapping - Maps concepts/intents to icon patterns (e.g., "save" → Save, Download, Disk)
- * 4. WordNet synonyms - Expands search using dictionary synonyms as fallback
+ * 4. Visual tags - Matches icons by visual/conceptual characteristics
+ * 5. WordNet synonyms - Expands search using dictionary synonyms
  * 
  * SCORING SYSTEM:
  * - Word-boundary substring match: 250 points (highest priority)
  * - Embedded substring match: 150 points
  * - Direct fuzzy match: 0-100 points (based on Fuse.js score)
  * - Semantic mapping match: 50-70 points
- * - WordNet synonym match: 40-45 points (lowest priority)
+ * - Visual tag match: 45-60 points
+ * - WordNet synonym match: 40-55 points (lowest priority)
  * 
  * The scoring ensures that icons with direct name matches always appear first,
  * while still surfacing related icons through semantic understanding.
@@ -25,6 +27,7 @@ import Fuse from "fuse.js";
 import natural from "natural";
 import { FLUENT_ICON_NAMES } from "../icon-names.js";
 import { getIconSizes } from "../icon-sizes.js";
+import { TAG_DICTIONARY, ICON_VISUAL_TAGS } from "../icon-visual-tags.js";
 
 // ============================================================================
 // TYPES
@@ -1001,6 +1004,65 @@ export async function searchIcons(
           result.item.name, 
           Math.max(iconScores.get(result.item.name) || 0, score)
         );
+      }
+    }
+  }
+  
+  // -------------------------------------------------------------------------
+  // LAYER 4: Visual tag matching
+  // -------------------------------------------------------------------------
+  // Match icons by visual/conceptual characteristics.
+  // This finds icons that LOOK like or represent the search term,
+  // even if the name doesn't contain it.
+  // Example: "circular" → finds Circle, Record, Sun icons
+  //          "navigation" → finds Arrow, Compass, Map icons
+  for (const word of queryWords) {
+    // 4a. Direct tag match - word matches a visual tag exactly
+    const tagIndex = TAG_DICTIONARY.indexOf(word);
+    if (tagIndex !== -1) {
+      // Find all icons with this tag
+      for (const [baseName, tags] of Object.entries(ICON_VISUAL_TAGS)) {
+        if (tags.includes(tagIndex)) {
+          // Add both Regular and Filled variants
+          for (const variant of ["Regular", "Filled"]) {
+            const iconName = baseName + variant;
+            if ((FLUENT_ICON_NAMES as readonly string[]).includes(iconName)) {
+              const score = 60; // Visual tag direct match
+              iconScores.set(
+                iconName,
+                Math.max(iconScores.get(iconName) || 0, score)
+              );
+            }
+          }
+        }
+      }
+    }
+    
+    // 4b. Fuzzy tag match - find tags similar to the search word
+    const tagFuseResults = new Fuse(TAG_DICTIONARY, {
+      threshold: 0.3,
+      includeScore: true,
+    }).search(word, { limit: 3 });
+    
+    for (const tagMatch of tagFuseResults) {
+      const matchedTagIndex = TAG_DICTIONARY.indexOf(tagMatch.item);
+      if (matchedTagIndex === -1) continue;
+      
+      // Find icons with this tag
+      for (const [baseName, tags] of Object.entries(ICON_VISUAL_TAGS)) {
+        if (tags.includes(matchedTagIndex)) {
+          for (const variant of ["Regular", "Filled"]) {
+            const iconName = baseName + variant;
+            if ((FLUENT_ICON_NAMES as readonly string[]).includes(iconName)) {
+              // Score decreases with fuzzy distance
+              const score = 45 - (tagMatch.score || 0) * 30;
+              iconScores.set(
+                iconName,
+                Math.max(iconScores.get(iconName) || 0, score)
+              );
+            }
+          }
+        }
       }
     }
   }
