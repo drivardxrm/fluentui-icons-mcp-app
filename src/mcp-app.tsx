@@ -5,8 +5,8 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { Search24Regular } from "@fluentui/react-icons";
-import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider, SearchBox } from "@fluentui/react-components";
+import { Search24Regular, Copy20Regular, Checkmark20Regular } from "@fluentui/react-icons";
+import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider, SearchBox, Button, Tooltip } from "@fluentui/react-components";
 import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
@@ -233,7 +233,17 @@ function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
   const handleSizeClick = useCallback((size: string | null, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card selection when clicking size buttons
     setSelectedSize(size);
-  }, []);
+    
+    // Update selected icon with new size
+    const newDisplayName = getSizedIconName(icon.name, size);
+    const newIconSizePx = size ? parseInt(size, 10) : 32;
+    onSelect({ 
+      ...icon, 
+      name: newDisplayName,
+      jsxElement: `<${newDisplayName} />`,
+      importStatement: `import { ${newDisplayName} } from "@fluentui/react-icons";`
+    }, size);
+  }, [icon, onSelect]);
   
   const handleCardClick = useCallback(() => {
     onSelect({ 
@@ -288,6 +298,17 @@ function FluentUIIconsAppInner({
   setError,
 }: AppInnerProps) {
   const [selectedIcon, setSelectedIcon] = useState<IconResult | null>(null);
+  const [selectedIconSize, setSelectedIconSize] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  
+  // Copy JSX to clipboard with indicator
+  const copyJsxToClipboard = useCallback(() => {
+    if (selectedIcon) {
+      navigator.clipboard.writeText(selectedIcon.jsxElement);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [selectedIcon]);
 
   // Parse tool result into structured data
   const iconsData = useMemo(() => {
@@ -394,7 +415,10 @@ function FluentUIIconsAppInner({
                 icon={icon}
                 isSelected={selectedIcon?.name === icon.name || 
                   Boolean(selectedIcon && icon.name.includes(selectedIcon.name.replace(/\d+/, '')))}
-                onSelect={(iconWithSize) => setSelectedIcon(iconWithSize)}
+                onSelect={(iconWithSize, size) => {
+                  setSelectedIcon(iconWithSize);
+                  setSelectedIconSize(size);
+                }}
               />
             ))}
         </div>
@@ -418,8 +442,11 @@ function FluentUIIconsAppInner({
           <div className={styles.detailHeader}>
             <div className={styles.detailIcon}>
               {(() => {
-                const IconComponent = getIconComponent(selectedIcon.name);
-                return IconComponent ? <IconComponent /> : "?";
+                // Get the base (unsized) icon component - extract base name
+                const baseName = selectedIcon.name.replace(/\d+(?=Regular|Filled|Color)/, '');
+                const IconComponent = getIconComponent(baseName);
+                const iconSizePx = selectedIconSize ? parseInt(selectedIconSize, 10) : 32;
+                return IconComponent ? <IconComponent style={{ fontSize: `${iconSizePx}px` }} /> : "?";
               })()}
             </div>
             <h2 className={styles.detailTitle}>{selectedIcon.name}</h2>

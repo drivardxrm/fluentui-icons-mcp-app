@@ -34,12 +34,58 @@
   margin: 0;
 }
 
-.searchBox {
+.searchRow {
+  display: flex;
+  gap: 16px;
   margin-bottom: 20px;
+  align-items: stretch;
+}
+
+.searchBox {
+  flex: 1;
 }
 
 .searchInput {
   width: 100%;
+}
+
+.selectedIconBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--color-background-secondary, #f5f5f5);
+  border: 1px solid var(--color-border-default, #e0e0e0);
+  border-radius: var(--border-radius-md, 4px);
+  min-width: 200px;
+}
+
+.selectedIconPreview {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary, #242424);
+}
+
+.selectedIconJsx {
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--color-text-primary, #242424);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.selectedIconPlaceholder {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #8a8a8a);
+  font-style: italic;
+}
+
+.copiedButton {
+  color: var(--color-success-default, #107c10) !important;
 }
 
 .resultsHeader {
