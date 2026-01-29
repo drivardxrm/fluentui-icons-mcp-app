@@ -6,7 +6,7 @@
  * contribute to the final score.
  * 
  * SCORING WEIGHTS (capped at 100 points total):
- * - Substring: 0-100 pts (exact word match = 100, partial/embedded = 15)
+ * - Substring: 0-100 pts (exact word match = 100, query contained in icon word = 75, partial/embedded = 15)
  * - Semantic: 0-25 pts (concept mapping, direct = 25, fuzzy key = 18)
  * - Visual: 0-25 pts (visual tag matching, direct = 25, fuzzy = 18)
  * - Synonym: 0-20 pts (dictionary expansion, direct = 20, fuzzy = 14)
@@ -928,23 +928,27 @@ function containsPascalWord(iconName: string, pattern: string): boolean {
  * Calculates a substring match score for an icon name.
  * 
  * This function checks if any query word appears in the icon name.
- * It differentiates between three types of matches:
+ * It differentiates between four types of matches:
  * 
  * 1. EXACT WORD MATCH (score: 350)
  *    The search term matches a complete word in the PascalCase name.
  *    Example: "beer" matches "Beer" in "DrinkBeerRegular" exactly
+ * 
+ * 2. QUERY CONTAINED IN WORD (score: 300) - only for query words > 4 chars
+ *    The search term is fully contained within a single icon word.
+ *    Example: "Agent" is contained in "Agents" in "ChatAgentsRegular"
  *    
- * 2. WORD BOUNDARY MATCH (score: 250)
+ * 3. WORD BOUNDARY MATCH (score: 250)
  *    The search term starts at a word boundary but doesn't complete the word.
  *    Example: "drink" in "DrinkBeerRegular" - starts at boundary but continues
  *    
- * 3. EMBEDDED MATCH (score: 150)
+ * 4. EMBEDDED MATCH (score: 150)
  *    The search term appears across word boundaries.
  *    Example: "beer" in "GlobeErrorRegular" - spans "Glo[be]" + "[Er]ror"
  * 
  * @param iconName - The icon name to check
  * @param queryWords - Array of search term words (lowercased)
- * @returns Score (0=no match, 150=embedded, 250=word-boundary, 350=exact)
+ * @returns Score (0=no match, 150=embedded, 250=word-boundary, 300=contained, 350=exact)
  */
 function getSubstringMatchScore(iconName: string, queryWords: string[]): number {
   const nameLower = iconName.toLowerCase();
@@ -956,6 +960,18 @@ function getSubstringMatchScore(iconName: string, queryWords: string[]): number 
     if (nameWords.includes(query)) {
       bestScore = Math.max(bestScore, 350); // Exact word match
       continue;
+    }
+    
+    // Check if query (4+ chars) is contained within a single icon word
+    // e.g., "agent" is contained in "agents"
+    if (query.length > 4) {
+      for (const iconWord of nameWords) {
+        if (iconWord.includes(query) && iconWord !== query) {
+          bestScore = Math.max(bestScore, 300); // Query contained in icon word
+          break;
+        }
+      }
+      if (bestScore >= 300) continue;
     }
     
     // Check for substring match
@@ -1059,16 +1075,18 @@ export async function searchIcons(
   };
   
   // -------------------------------------------------------------------------
-  // LAYER 0: Direct substring matching (exact=100, partial=15)
+  // LAYER 0: Direct substring matching (exact=100, contained=75, partial=15)
   // -------------------------------------------------------------------------
   for (const item of iconSearchItems) {
     const rawScore = getSubstringMatchScore(item.name, queryWords);
     if (rawScore > 0) {
       const scores = getLayerScores(item.name);
-      // Exact word (350) → 100 pts, Word-boundary/Embedded → 15 pts (partial)
+      // Exact word (350) → 100 pts, Contained (300) → 75 pts, Word-boundary/Embedded → 15 pts
       let substringScore = 15; // Default: partial match
       if (rawScore >= 350) {
         substringScore = 100; // Exact word match
+      } else if (rawScore >= 300) {
+        substringScore = 75; // Query contained in icon word (e.g., "Agent" in "Agents")
       }
       // Word-boundary (250) and embedded (150) both count as partial = 15 pts
       scores.substring = Math.max(scores.substring, substringScore);
