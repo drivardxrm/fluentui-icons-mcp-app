@@ -262,7 +262,8 @@ function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
             <ToggleButton
               key={size ?? "unsized"}
               size="small"
-              appearance={selectedSize === size ? "primary" : "outline"}
+              shape="rounded"
+              appearance={selectedSize === size ? "secondary" : "subtle"}
               checked={selectedSize === size}
               onClick={(e) => handleSizeClick(size, e)}
               className={styles.sizeToggleButton}

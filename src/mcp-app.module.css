@@ -145,10 +145,13 @@
 }
 
 .sizeToggleButton {
-  min-width: 32px;
-  padding: 2px 6px;
-  font-size: 11px;
+  min-width: 24px !important;
+  max-width: 28px;
+  padding: 0 4px !important;
+  font-size: 10px;
   font-family: monospace;
+  height: 20px !important;
+  line-height: 1;
 }
 
 .detailPanel {
