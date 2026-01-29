@@ -11,6 +11,10 @@ export interface IconResult {
   importStatement: string;
   category: string;
   availableSizes?: string[];
+  /** Relevance score (higher = more relevant) */
+  score?: number;
+  /** Which search layer produced the score */
+  scoreLayer?: 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
 }
 
 /**

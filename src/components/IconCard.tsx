@@ -96,11 +96,59 @@ export function IconCard({
     }
   }, [displayIconName, onAddImport]);
 
+  // Get score badge info
+  const scoreBadgeInfo = useMemo(() => {
+    if (!icon.score || !icon.scoreLayer) return null;
+    
+    const layerDescriptions: Record<string, { label: string; description: string; styleClass: string }> = {
+      substring: {
+        label: 'S',
+        description: `Substring match (${icon.score})\nDirect text match in icon name`,
+        styleClass: styles.scoreBadgeSubstring,
+      },
+      fuzzy: {
+        label: 'F',
+        description: `Fuzzy match (${icon.score})\nTypo-tolerant name matching`,
+        styleClass: styles.scoreBadgeFuzzy,
+      },
+      semantic: {
+        label: 'M',
+        description: `Semantic match (${icon.score})\nConcept/intent mapping`,
+        styleClass: styles.scoreBadgeSemantic,
+      },
+      visual: {
+        label: 'V',
+        description: `Visual match (${icon.score})\nVisual tag matching`,
+        styleClass: styles.scoreBadgeVisual,
+      },
+      wordnet: {
+        label: 'W',
+        description: `WordNet match (${icon.score})\nDictionary synonym`,
+        styleClass: styles.scoreBadgeWordnet,
+      },
+    };
+    
+    return layerDescriptions[icon.scoreLayer] || null;
+  }, [icon.score, icon.scoreLayer, styles]);
+
   return (
     <div
       className={mergeClasses(styles.iconCard, isSelected && styles.iconCardSelected)}
       onClick={handleCardClick}
     >
+      {/* Score badge */}
+      {scoreBadgeInfo && (
+        <Tooltip 
+          content={scoreBadgeInfo.description} 
+          relationship="description"
+          positioning="above-start"
+        >
+          <div className={mergeClasses(styles.scoreBadge, scoreBadgeInfo.styleClass)}>
+            {scoreBadgeInfo.label}
+          </div>
+        </Tooltip>
+      )}
+      
       {/* Action buttons on selected card */}
       {isSelected && (
         <div className={styles.iconCardActionButtons}>

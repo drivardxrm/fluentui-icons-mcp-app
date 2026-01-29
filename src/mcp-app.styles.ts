@@ -219,6 +219,49 @@ export const useAppStyles = makeStyles({
     position: "relative",
   },
 
+  scoreBadge: {
+    position: "absolute",
+    top: "4px",
+    left: "4px",
+    fontSize: "9px",
+    fontWeight: 600,
+    lineHeight: "12px",
+    minWidth: "18px",
+    height: "14px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    ...shorthands.borderRadius("3px"),
+    ...shorthands.padding("0", "3px"),
+    cursor: "help",
+    opacity: 0.85,
+  },
+
+  scoreBadgeSubstring: {
+    backgroundColor: tokens.colorPaletteGreenBackground2,
+    color: tokens.colorPaletteGreenForeground2,
+  },
+
+  scoreBadgeFuzzy: {
+    backgroundColor: tokens.colorPaletteBlueBorderActive,
+    color: tokens.colorNeutralForegroundOnBrand,
+  },
+
+  scoreBadgeSemantic: {
+    backgroundColor: tokens.colorPalettePurpleBackground2,
+    color: tokens.colorPalettePurpleForeground2,
+  },
+
+  scoreBadgeVisual: {
+    backgroundColor: tokens.colorPaletteMarigoldBackground2,
+    color: tokens.colorPaletteMarigoldForeground2,
+  },
+
+  scoreBadgeWordnet: {
+    backgroundColor: tokens.colorNeutralBackground4,
+    color: tokens.colorNeutralForeground3,
+  },
+
   iconCardActionButtons: {
     position: "absolute",
     top: "4px",

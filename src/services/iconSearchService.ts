@@ -25,6 +25,7 @@
 
 import Fuse from "fuse.js";
 import natural from "natural";
+import synonymsLib from "synonyms";
 import { FLUENT_ICON_NAMES } from "../icon-names.js";
 import { getIconSizes } from "../icon-sizes.js";
 import { TAG_DICTIONARY, ICON_VISUAL_TAGS } from "../icon-visual-tags.js";
@@ -144,12 +145,15 @@ const semanticIconMapping: Record<string, string[]> = {
   // -------------------------------------------------------------------------
   // ACTIONS - EDIT/MODIFY
   // -------------------------------------------------------------------------
-  edit: ["Edit", "Pen", "Pencil", "Compose", "Rename"],
+  edit: ["Edit", "Pen", "Compose", "Rename"],
+  pencil: ["Edit", "Pen", "Compose", "Rename", "Draw"], // No "Pencil" icons exist, use Edit
   modify: ["Edit", "Settings", "Options", "Wrench"],
   write: ["Edit", "Pen", "Compose", "TextEdit"],
   compose: ["Compose", "Edit", "Mail", "New"],
   change: ["Edit", "ArrowSync", "Rename", "Settings"],
   update: ["ArrowSync", "Update", "Download", "Edit"],
+  draw: ["Edit", "Pen", "Ink", "Draw", "Brush"],
+  sketch: ["Edit", "Pen", "Draw", "Ink"],
   
   // -------------------------------------------------------------------------
   // ACTIONS - SAVE/DOWNLOAD/UPLOAD
@@ -714,20 +718,21 @@ const semanticFuse = new Fuse(semanticKeys, {
 });
 
 // ============================================================================
-// WORDNET SYNONYM LOOKUP
+// SYNONYM LOOKUP (synonyms package + WordNet fallback)
 // ============================================================================
 
 /**
- * Retrieves synonyms for a word using WordNet with caching.
+ * Retrieves synonyms for a word using a two-tier approach:
  * 
- * WordNet is a lexical database that organizes words into synonym sets (synsets).
- * This function looks up a word and returns related synonyms.
+ * 1. SYNONYMS PACKAGE (fast, synchronous)
+ *    Uses the lightweight `synonyms` npm package for instant lookups.
+ *    Returns undefined for many words, so we need a fallback.
  * 
- * Used as a fallback when our custom semantic mapping doesn't have entries
- * for the user's search term. For example, if user searches for "automobile",
- * WordNet might return synonyms like "car", "vehicle", "motorcar".
+ * 2. WORDNET (slower, async, more comprehensive)
+ *    Used as fallback when `synonyms` doesn't have the word.
+ *    WordNet is a lexical database with broader coverage.
  * 
- * Results are cached to avoid repeated expensive lookups.
+ * Results are cached to avoid repeated lookups.
  * 
  * @param word - The word to look up synonyms for
  * @returns Promise resolving to array of synonym strings (max 10)
@@ -739,24 +744,56 @@ function getSynonyms(word: string): Promise<string[]> {
     return Promise.resolve(cached);
   }
   
+  const allSynonyms = new Set<string>();
+  
+  // TIER 1: Try synonyms package first (fast, synchronous)
+  try {
+    const synResult = synonymsLib(word);
+    if (synResult) {
+      // synResult is { n: [...], v: [...], adj: [...], ... } by part of speech
+      for (const posSynonyms of Object.values(synResult)) {
+        if (Array.isArray(posSynonyms)) {
+          for (const syn of posSynonyms) {
+            const clean = syn.toLowerCase().replace(/[_\s]/g, "");
+            if (clean !== word && clean.length >= 3) {
+              allSynonyms.add(clean);
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // synonyms package may throw for unknown words
+  }
+  
+  // If synonyms package found results, use those (faster)
+  if (allSynonyms.size > 0) {
+    const limited = [...allSynonyms].slice(0, 10);
+    synonymCache.set(word, limited);
+    return Promise.resolve(limited);
+  }
+  
+  // TIER 2: Fall back to WordNet (slower but more comprehensive)
   return new Promise((resolve) => {
-    const synonyms: string[] = [];
-    
     wordnet.lookup(word, (results) => {
       // Iterate through all synsets (synonym sets) for this word
       for (const result of results) {
         for (const synonym of result.synonyms) {
-          // Clean up the synonym (remove underscores, lowercase)
-          const clean = synonym.toLowerCase().replace(/_/g, "");
-          // Filter: not the same word, at least 3 chars, no duplicates
-          if (clean !== word && clean.length >= 3 && !synonyms.includes(clean)) {
-            synonyms.push(clean);
+          // WordNet often returns compound words with underscores like "scientific_discipline"
+          // Split these and add each part as a separate synonym for better matching
+          const parts = synonym.toLowerCase().split("_");
+          
+          for (const part of parts) {
+            // Filter: not the same word, at least 3 chars
+            if (part !== word && part.length >= 3) {
+              allSynonyms.add(part);
+            }
           }
         }
       }
       
-      // Limit to top 10 synonyms to prevent over-expansion
-      const limited = synonyms.slice(0, 10);
+      // Limit to top 15 synonyms
+      const limited = [...allSynonyms].slice(0, 15);
       synonymCache.set(word, limited);
       resolve(limited);
     });
@@ -963,9 +1000,9 @@ export async function searchIcons(
   }
   
   // -------------------------------------------------------------------------
-  // LAYER 3: WordNet synonyms (ALWAYS runs, not just as fallback)
+  // LAYER 3: Synonym expansion (synonyms package + WordNet fallback)
   // -------------------------------------------------------------------------
-  // WordNet expansion helps discover related concepts even when we have
+  // Synonym expansion helps discover related concepts even when we have
   // some results. For example, "science" → "chemistry" → Beaker icons.
   // This bridges terms that aren't in our semantic mapping through dictionary
   // relationships.
@@ -974,7 +1011,7 @@ export async function searchIcons(
     
     // Debug logging - helps diagnose synonym expansion
     if (synonyms.length > 0) {
-      console.log(`[WordNet] "${word}" → [${synonyms.join(", ")}]`);
+      console.log(`[Synonyms] "${word}" → [${synonyms.join(", ")}]`);
     }
     
     for (const synonym of synonyms) {
@@ -1084,9 +1121,24 @@ export async function searchIcons(
     .slice(0, maxResults);
   
   // Transform to IconResult format
-  return sortedIcons.map(([name]) => {
+  return sortedIcons.map(([name, score]) => {
     const { baseName, variant } = parseIconName(name);
     const availableSizes = getIconSizes(name);
+    
+    // Determine which layer produced this score
+    // Priority order: substring > semantic > visual > wordnet > fuzzy
+    let scoreLayer: 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
+    if (score >= 150) {
+      scoreLayer = 'substring'; // 150-250: direct substring match
+    } else if (score >= 50 && score <= 70) {
+      scoreLayer = 'semantic'; // 50-70: semantic mapping
+    } else if (score >= 45 && score < 50) {
+      scoreLayer = 'visual'; // 45-60: visual tag match (lower range)
+    } else if (score >= 40 && score < 45) {
+      scoreLayer = 'wordnet'; // 40-55: WordNet synonyms (lower range)
+    } else {
+      scoreLayer = 'fuzzy'; // 0-100: fuzzy name match (fallback)
+    }
     
     return {
       name,
@@ -1094,6 +1146,8 @@ export async function searchIcons(
       importStatement: `import { ${name} } from "@fluentui/react-icons";`,
       category: variant || "Icon",
       availableSizes,
+      score: Math.round(score),
+      scoreLayer,
     };
   });
 }
