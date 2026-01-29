@@ -143,11 +143,14 @@ The search uses **multi-layered additive scoring** where all matching layers con
 
 | Layer | Max Points | Description |
 |-------|------------|-------------|
-| **Substring** | 100 | Exact word match in icon name gets 100 pts, partial matches get 15 pts |
+| **Exact** | 100 | Full word match in icon name (e.g., "save" matches "Save" in SaveRegular) |
+| **Contained** | 75 | Query found within icon word, for words > 4 chars (e.g., "agent" in "Agents") |
 | **Semantic** | 25 | Concept mapping (e.g., "save" → Save, Download, Disk icons) |
 | **Visual** | 25 | Visual tag matching from curated icon descriptions |
 | **Synonym** | 20 | Dictionary expansion via WordNet (e.g., "trash" → "delete") |
 | **Fuzzy** | 15 | Fuse.js name similarity for typo tolerance |
+
+Click the **ℹ️ Scoring** button in the header to see this breakdown in the UI.
 
 #### How Scoring Works
 <img width="377" height="308" alt="image" src="https://github.com/user-attachments/assets/fcec4455-b474-4976-b330-683284dc91ce" />
@@ -158,9 +161,12 @@ The search uses **multi-layered additive scoring** where all matching layers con
 2. **Score capping**: The total score is capped at 100 points. An exact substring match immediately gives 100 pts.
 
 3. **Score breakdown example** for searching "save":
-   - `SaveRegular` → 100 pts (exact substring match)
+   - `SaveRegular` → 100 pts (exact word match)
    - `ArrowDownloadRegular` → 40 pts (25 semantic + 15 fuzzy)
    - `DiskRegular` → 25 pts (semantic mapping only)
+
+   For searching "agent":
+   - `AgentsRegular` → 90 pts (75 contained + 15 fuzzy)
 
 4. **Score badge colors** in the UI:
    - 🟢 **Green** (80-100): Excellent match
@@ -178,6 +184,7 @@ Icons matching multiple layers rank higher. The `threshold` parameter controls f
 - "Search for calendar icons"
 - "Show me arrow icons"
 - "I need a save or download icon"
+- "Find running or shoe icons" (uses sports semantic mappings)
 
 ## Project Structure
 
@@ -198,7 +205,8 @@ fluentui-icons-mcp-app/
 │   │   ├── SearchBar.tsx
 │   │   ├── IconsGrid.tsx
 │   │   ├── IconCard.tsx
-│   │   └── DetailPanel.tsx
+│   │   ├── DetailPanel.tsx
+│   │   └── ScoringInfoTooltip.tsx  # Scoring explanation popover
 │   ├── services/
 │   │   └── iconSearchService.ts  # Multi-layer search algorithm
 │   ├── types/

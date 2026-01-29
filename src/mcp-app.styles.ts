@@ -42,6 +42,22 @@ export const useAppStyles = makeStyles({
     color: tokens.colorNeutralForeground1,
   },
 
+  headerRightControls: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("16px"),
+  },
+
+  scoringInfoContainer: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("2px"),
+  },
+
+  scoringLabel: {
+    color: tokens.colorNeutralForeground2,
+  },
+
   themeToggleContainer: {
     display: "flex",
     alignItems: "center",

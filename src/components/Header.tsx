@@ -1,10 +1,11 @@
 /**
  * @file Header component - app title, logo, and theme toggle
  */
-import { Switch, Tooltip } from "@fluentui/react-components";
+import { Switch, Tooltip, Text } from "@fluentui/react-components";
 import { WeatherSunny16Filled, WeatherMoon16Filled } from "@fluentui/react-icons";
 import { useAppStyles } from "../mcp-app.styles";
 import mcpLogo from "../assets/mcp.png";
+import { ScoringInfoTooltip } from "./ScoringInfoTooltip";
 
 export interface HeaderProps {
   isDarkMode: boolean;
@@ -21,17 +22,23 @@ export function Header({ isDarkMode, onToggleTheme }: HeaderProps) {
           <img src={mcpLogo} alt="MCP" className={styles.mcpLogo} />
           <h1 className={styles.title}>Fluent UI Icons - MCP App</h1>
         </div>
-        <Tooltip content={isDarkMode ? "Dark mode" : "Light mode"} relationship="label">
-          <div className={styles.themeToggleContainer}>
-            <WeatherSunny16Filled className={styles.themeIcon} />
-            <Switch
-              checked={isDarkMode}
-              onChange={onToggleTheme}
-              className={styles.themeSwitch}
-            />
-            <WeatherMoon16Filled className={styles.themeIcon} />
+        <div className={styles.headerRightControls}>
+          <div className={styles.scoringInfoContainer}>
+            <ScoringInfoTooltip />
+            <Text size={200} className={styles.scoringLabel}>Scoring</Text>
           </div>
-        </Tooltip>
+          <Tooltip content={isDarkMode ? "Dark mode" : "Light mode"} relationship="label">
+            <div className={styles.themeToggleContainer}>
+              <WeatherSunny16Filled className={styles.themeIcon} />
+              <Switch
+                checked={isDarkMode}
+                onChange={onToggleTheme}
+                className={styles.themeSwitch}
+              />
+              <WeatherMoon16Filled className={styles.themeIcon} />
+            </div>
+          </Tooltip>
+        </div>
       </div>
       <p className={styles.subtitle}>
         Search and explore @fluentui/react-icons for your React projects
