@@ -5,6 +5,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { FLUENT_ICON_NAMES } from "./src/icon-names.js";
+import { getIconSizes } from "./src/icon-sizes.js";
 
 // Works both from source (server.ts) and compiled (dist/server.js)
 const DIST_DIR = import.meta.filename.endsWith(".ts")
@@ -20,6 +21,7 @@ interface IconResult {
   jsxElement: string;
   importStatement: string;
   category: string;
+  availableSizes?: string[];
 }
 
 /**
@@ -375,11 +377,13 @@ function searchIcons(query: string, maxResults: number = 20): IconResult[] {
   
   return scored.map(({ name }) => {
     const { baseName, variant } = parseIconName(name);
+    const availableSizes = getIconSizes(name);
     return {
       name,
       jsxElement: `<${name} />`,
       importStatement: `import { ${name} } from "@fluentui/react-icons";`,
       category: variant || "Icon",
+      availableSizes,
     };
   });
 }

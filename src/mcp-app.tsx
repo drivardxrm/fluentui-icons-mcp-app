@@ -17,6 +17,7 @@ interface IconResult {
   jsxElement: string;
   importStatement: string;
   category: string;
+  availableSizes?: string[];
 }
 
 interface StructuredContent {
@@ -313,6 +314,11 @@ function FluentUIIconsAppInner({
                 </div>
                 <div className={styles.iconName}>{icon.name}</div>
                 <div className={styles.iconVariant}>{icon.category}</div>
+                {icon.availableSizes && icon.availableSizes.length > 0 && (
+                  <div className={styles.iconSizes}>
+                    {icon.availableSizes.join(" ")}
+                  </div>
+                )}
               </div>
             );
           })}
