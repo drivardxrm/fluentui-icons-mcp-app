@@ -177,6 +177,14 @@ export const useAppStyles = makeStyles({
   iconCardSelected: {
     ...shorthands.borderColor(tokens.colorBrandStroke1),
     backgroundColor: tokens.colorBrandBackground2,
+    position: "relative",
+  },
+
+  iconCardCopyButton: {
+    position: "absolute",
+    top: "4px",
+    right: "4px",
+    fontSize: tokens.fontSizeBase100,
   },
 
   iconPreview: {

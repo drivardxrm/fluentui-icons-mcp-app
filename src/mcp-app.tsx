@@ -5,7 +5,7 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { Search24Regular, Copy20Regular, Checkmark20Regular, WeatherSunny16Filled, WeatherMoon16Filled } from "@fluentui/react-icons";
+import { Search24Regular, Copy20Regular, Checkmark20Regular, WeatherSunny16Filled, WeatherMoon16Filled, Code16Regular } from "@fluentui/react-icons";
 import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider, SearchBox, Button, Tooltip, mergeClasses, Switch } from "@fluentui/react-components";
 import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
@@ -276,11 +276,31 @@ function IconCard({ icon, isSelected, onSelect, controlledSize, onSizeChange }: 
     }, selectedSize);
   }, [icon, displayIconName, selectedSize, onSelect]);
 
+  const handleCopyClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    const jsxElement = `<${displayIconName} />`;
+    navigator.clipboard.writeText(jsxElement);
+  }, [displayIconName]);
+
   return (
     <div
       className={mergeClasses(styles.iconCard, isSelected && styles.iconCardSelected)}
       onClick={handleCardClick}
     >
+      {/* Copy button on selected card */}
+      {isSelected && (
+        <Tooltip content="Copy JSX" relationship="label">
+          <Button
+            appearance="subtle"
+            size="small"
+            icon={<Code16Regular />}
+            onClick={handleCopyClick}
+            className={styles.iconCardCopyButton}
+          >
+            Copy
+          </Button>
+        </Tooltip>
+      )}
       <div className={styles.iconPreview}>
         {IconComponent ? <IconComponent style={{ fontSize: `${iconSizePx}px` }} /> : "?"}
       </div>
