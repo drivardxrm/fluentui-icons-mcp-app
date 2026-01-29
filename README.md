@@ -149,6 +149,25 @@ The search uses **multi-layered additive scoring** where all matching layers con
 | **Synonym** | 20 | Dictionary expansion via WordNet (e.g., "trash" → "delete") |
 | **Fuzzy** | 15 | Fuse.js name similarity for typo tolerance |
 
+#### How Scoring Works
+
+1. **Additive scoring**: Each layer adds points independently. An icon matching multiple layers scores higher than one matching a single layer.
+
+2. **Score capping**: The total score is capped at 100 points. An exact substring match immediately gives 100 pts.
+
+3. **Score breakdown example** for searching "save":
+   - `SaveRegular` → 100 pts (exact substring match)
+   - `ArrowDownloadRegular` → 40 pts (25 semantic + 15 fuzzy)
+   - `DiskRegular` → 25 pts (semantic mapping only)
+
+4. **Score badge colors** in the UI:
+   - 🟢 **Green** (80-100): Excellent match
+   - 🔵 **Blue** (50-79): Good match  
+   - ⚫ **Neutral** (25-49): Moderate match
+   - 🔘 **Muted** (0-24): Weak match
+
+5. **Threshold parameter**: Controls fuzzy matching strictness (0 = exact only, 1 = match anything). Default is 0.1 (strict). This applies to all fuzzy operations across all layers.
+
 Icons matching multiple layers rank higher. The `threshold` parameter controls fuzzy matching strictness across all layers.
 
 ### Example Prompts
