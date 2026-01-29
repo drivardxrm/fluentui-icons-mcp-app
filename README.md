@@ -163,8 +163,8 @@ The search uses **multi-layered additive scoring** where all matching layers con
 4. **Score badge colors** in the UI:
    - 🟢 **Green** (80-100): Excellent match
    - 🔵 **Blue** (50-79): Good match  
-   - ⚫ **Neutral** (25-49): Moderate match
-   - 🔘 **Muted** (0-24): Weak match
+   - 🟡 **Yellow** (25-49): Moderate match
+   - ⚫ **Gray** (0-24): Weak match
 
 5. **Threshold parameter**: Controls fuzzy matching strictness (0 = exact only, 1 = match anything). Default is 0.1 (strict). This applies to all fuzzy operations across all layers.
 

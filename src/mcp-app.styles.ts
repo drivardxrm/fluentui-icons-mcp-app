@@ -228,29 +228,29 @@ export const useAppStyles = makeStyles({
     minWidth: "24px",
   },
 
-  // Score badge color variants - subtle, theme-aware colors
+  // Score badge color variants - theme-aware colors with clear visual distinction
   scoreBadgeExcellent: {
-    // Green-ish for excellent matches (80-100)
+    // Green for excellent matches (80-100)
     backgroundColor: tokens.colorPaletteGreenBackground2,
     color: tokens.colorPaletteGreenForeground2,
   },
 
   scoreBadgeGood: {
-    // Blue for good matches (50-79)
-    backgroundColor: tokens.colorNeutralBackground3,
+    // Blue/brand for good matches (50-79)
+    backgroundColor: tokens.colorBrandBackground2,
     color: tokens.colorBrandForeground1,
   },
 
   scoreBadgeModerate: {
-    // Neutral for moderate matches (25-49)
-    backgroundColor: tokens.colorNeutralBackground4,
-    color: tokens.colorNeutralForeground2,
+    // Yellow/marigold for moderate matches (25-49)
+    backgroundColor: tokens.colorPaletteMarigoldBackground2,
+    color: tokens.colorPaletteMarigoldForeground2,
   },
 
   scoreBadgeWeak: {
-    // Muted for weak matches (0-24)
+    // Gray/muted for weak matches (0-24)
     backgroundColor: tokens.colorNeutralBackground5,
-    color: tokens.colorNeutralForeground3,
+    color: tokens.colorNeutralForeground4,
   },
 
   iconCardActionButtons: {
