@@ -589,28 +589,28 @@ function FluentUIIconsAppInner({
             )}
           </div>
 
-          <div className={styles.codeLabel}>Import Statement</div>
+          <div className={styles.codeLabelRow}>
+            <div className={styles.codeLabel}>Import Statement</div>
+            <Tooltip content="Add import to current file" relationship="label">
+              <Button
+                appearance="subtle"
+                size="small"
+                icon={<DocumentAdd16Regular />}
+                onClick={() => addImportToFile(selectedIcon.importStatement)}
+                className={styles.addImportButton}
+              >
+                Add Import to file
+              </Button>
+            </Tooltip>
+          </div>
           <div className={styles.codeBlock}>
             <code>{selectedIcon.importStatement}</code>
-            <div className={styles.codeBlockButtons}>
-              <Tooltip content="Add import to current file" relationship="label">
-                <Button
-                  appearance="subtle"
-                  size="small"
-                  icon={<DocumentAdd16Regular />}
-                  onClick={() => addImportToFile(selectedIcon.importStatement)}
-                  className={styles.codeBlockButton}
-                >
-                  Add to File
-                </Button>
-              </Tooltip>
-              <button
-                className={styles.copyButton}
-                onClick={() => copyToClipboard(selectedIcon.importStatement)}
-              >
-                Copy
-              </button>
-            </div>
+            <button
+              className={styles.copyButton}
+              onClick={() => copyToClipboard(selectedIcon.importStatement)}
+            >
+              Copy
+            </button>
           </div>
 
           <div className={styles.codeLabel}>JSX Element</div>

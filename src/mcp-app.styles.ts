@@ -297,27 +297,31 @@ export const useAppStyles = makeStyles({
     position: "relative",
   },
 
+  codeLabelRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "4px",
+  },
+
   codeLabel: {
     fontSize: tokens.fontSizeBase100,
     color: tokens.colorNeutralForeground2,
-    marginBottom: "4px",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
   },
 
-  codeBlockButtons: {
-    position: "absolute",
-    top: "8px",
-    right: "8px",
-    display: "flex",
-    ...shorthands.gap("4px"),
-  },
-
-  codeBlockButton: {
-    fontSize: "11px",
+  addImportButton: {
+    fontSize: tokens.fontSizeBase100,
+    height: "auto",
+    minWidth: "auto",
+    ...shorthands.padding("2px", "6px"),
   },
 
   copyButton: {
+    position: "absolute",
+    top: "8px",
+    right: "8px",
     ...shorthands.padding("4px", "8px"),
     fontSize: "11px",
     backgroundColor: tokens.colorNeutralBackground1Hover,
