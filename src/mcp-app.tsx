@@ -5,12 +5,12 @@
 import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { Search24Regular, Copy20Regular, Checkmark20Regular } from "@fluentui/react-icons";
-import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider, SearchBox, Button, Tooltip } from "@fluentui/react-components";
+import { Search24Regular, Copy20Regular, Checkmark20Regular, WeatherSunny16Filled, WeatherMoon16Filled } from "@fluentui/react-icons";
+import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider, SearchBox, Button, Tooltip, mergeClasses, Switch } from "@fluentui/react-components";
 import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
-import styles from "./mcp-app.module.css";
+import { useAppStyles } from "./mcp-app.styles";
 
 // Type for icon result from the server
 interface IconResult {
@@ -84,7 +84,13 @@ function parseToolResult(result: CallToolResult): StructuredContent | null {
 /**
  * Main App Component
  */
-function FluentUIIconsApp() {
+interface FluentUIIconsAppProps {
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
+}
+
+function FluentUIIconsApp({ isDarkMode, onToggleTheme }: FluentUIIconsAppProps) {
+  const styles = useAppStyles();
   const [toolResult, setToolResult] = useState<CallToolResult | null>(null);
   const [hostContext, setHostContext] = useState<McpUiHostContext | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,6 +174,8 @@ function FluentUIIconsApp() {
       setIsSearching={setIsSearching}
       error={error}
       setError={setError}
+      isDarkMode={isDarkMode}
+      onToggleTheme={onToggleTheme}
     />
   );
 }
@@ -182,6 +190,8 @@ interface AppInnerProps {
   setIsSearching: (searching: boolean) => void;
   error: string | null;
   setError: (error: string | null) => void;
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
 }
 
 /**
@@ -213,6 +223,7 @@ interface IconCardProps {
 }
 
 function IconCard({ icon, isSelected, onSelect, controlledSize, onSizeChange }: IconCardProps) {
+  const styles = useAppStyles();
   const [internalSize, setInternalSize] = useState<string | null>(null);
   
   // Use controlled size when selected and provided, otherwise use internal state
@@ -267,7 +278,7 @@ function IconCard({ icon, isSelected, onSelect, controlledSize, onSizeChange }: 
 
   return (
     <div
-      className={`${styles.iconCard} ${isSelected ? styles.selected : ""}`}
+      className={mergeClasses(styles.iconCard, isSelected && styles.iconCardSelected)}
       onClick={handleCardClick}
     >
       <div className={styles.iconPreview}>
@@ -307,7 +318,10 @@ function FluentUIIconsAppInner({
   setIsSearching,
   error,
   setError,
+  isDarkMode,
+  onToggleTheme,
 }: AppInnerProps) {
+  const styles = useAppStyles();
   const [selectedIcon, setSelectedIcon] = useState<IconResult | null>(null);
   const [selectedIconSize, setSelectedIconSize] = useState<string | null>(null);
   const [selectedBaseIcon, setSelectedBaseIcon] = useState<IconResult | null>(null); // Original icon from search
@@ -390,7 +404,20 @@ function FluentUIIconsAppInner({
       <div className={styles.stickyHeader}>
         {/* Header */}
         <header className={styles.header}>
-          <h1 className={styles.title}>Fluent UI Icons</h1>
+          <div className={styles.headerRow}>
+            <h1 className={styles.title}>Fluent UI Icons</h1>
+            <Tooltip content={isDarkMode ? "Dark mode" : "Light mode"} relationship="label">
+              <div className={styles.themeToggleContainer}>
+                <WeatherSunny16Filled className={styles.themeIcon} />
+                <Switch
+                  checked={isDarkMode}
+                  onChange={onToggleTheme}
+                  className={styles.themeSwitch}
+                />
+                <WeatherMoon16Filled className={styles.themeIcon} />
+              </div>
+            </Tooltip>
+          </div>
           <p className={styles.subtitle}>
             Search and explore @fluentui/react-icons for your React projects
           </p>
@@ -576,11 +603,36 @@ function MyComponent() {
   );
 }
 
+// Theme wrapper component
+function ThemedApp() {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check for saved preference or system preference
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('fluentui-icons-theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  const toggleTheme = useCallback(() => {
+    setIsDarkMode(prev => {
+      const newValue = !prev;
+      localStorage.setItem('fluentui-icons-theme', newValue ? 'dark' : 'light');
+      return newValue;
+    });
+  }, []);
+
+  return (
+    <FluentProvider theme={isDarkMode ? webDarkTheme : webLightTheme}>
+      <FluentUIIconsApp isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />
+    </FluentProvider>
+  );
+}
+
 // Mount the app
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <FluentProvider theme={webLightTheme}>
-      <FluentUIIconsApp />
-    </FluentProvider>
+    <ThemedApp />
   </StrictMode>
 );
