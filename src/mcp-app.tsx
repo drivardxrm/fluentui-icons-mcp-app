@@ -6,6 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { Search24Regular } from "@fluentui/react-icons";
+import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton } from "@fluentui/react-components";
 import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
@@ -183,6 +184,95 @@ interface AppInnerProps {
   setError: (error: string | null) => void;
 }
 
+/**
+ * Helper to compute sized icon name from unsized icon name
+ * e.g., "SendRegular" + "24" => "Send24Regular"
+ */
+function getSizedIconName(unsizedName: string, size: string | null): string {
+  if (!size) return unsizedName;
+  
+  // Pattern: BaseName + Variant (Regular/Filled/Color)
+  const match = unsizedName.match(/^(.+?)(Regular|Filled|Color)$/);
+  if (match) {
+    return `${match[1]}${size}${match[2]}`;
+  }
+  return unsizedName;
+}
+
+/**
+ * IconCard component with size toggle buttons
+ */
+interface IconCardProps {
+  icon: IconResult;
+  isSelected: boolean;
+  onSelect: (icon: IconResult, selectedSize: string | null) => void;
+}
+
+function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  
+  // Build size options: "--" for unsized, then available pixel sizes
+  const sizeOptions = useMemo(() => {
+    const options: (string | null)[] = [null]; // null represents unsized "--"
+    if (icon.availableSizes && icon.availableSizes.length > 0) {
+      options.push(...icon.availableSizes);
+    }
+    return options;
+  }, [icon.availableSizes]);
+  
+  // Get the display icon name based on selected size
+  const displayIconName = useMemo(() => {
+    return getSizedIconName(icon.name, selectedSize);
+  }, [icon.name, selectedSize]);
+  
+  const IconComponent = getIconComponent(icon.name);
+  
+  const handleSizeClick = useCallback((size: string | null, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card selection when clicking size buttons
+    setSelectedSize(size);
+  }, []);
+  
+  const handleCardClick = useCallback(() => {
+    onSelect({ 
+      ...icon, 
+      name: displayIconName,
+      jsxElement: `<${displayIconName} />`,
+      importStatement: `import { ${displayIconName} } from "@fluentui/react-icons";`
+    }, selectedSize);
+  }, [icon, displayIconName, selectedSize, onSelect]);
+
+  return (
+    <div
+      className={`${styles.iconCard} ${isSelected ? styles.selected : ""}`}
+      onClick={handleCardClick}
+    >
+      <div className={styles.iconPreview}>
+        {IconComponent ? <IconComponent /> : "?"}
+      </div>
+      <div className={styles.iconName}>{displayIconName}</div>
+      <div className={styles.iconVariant}>{icon.category}</div>
+      
+      {/* Size Toggle Buttons */}
+      {sizeOptions.length > 1 && (
+        <div className={styles.sizeToggleGroup}>
+          {sizeOptions.map((size) => (
+            <ToggleButton
+              key={size ?? "unsized"}
+              size="small"
+              appearance={selectedSize === size ? "primary" : "outline"}
+              checked={selectedSize === size}
+              onClick={(e) => handleSizeClick(size, e)}
+              className={styles.sizeToggleButton}
+            >
+              {size ?? "--"}
+            </ToggleButton>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FluentUIIconsAppInner({
   app,
   toolResult,
@@ -301,27 +391,15 @@ function FluentUIIconsAppInner({
       {/* Icons Grid */}
       {displayData && displayData.icons.length > 0 ? (
         <div className={styles.iconsGrid}>
-          {displayData.icons.map((icon) => {
-            const IconComponent = getIconComponent(icon.name);
-            return (
-              <div
-                key={icon.name}
-                className={`${styles.iconCard} ${selectedIcon?.name === icon.name ? styles.selected : ""}`}
-                onClick={() => setSelectedIcon(icon)}
-              >
-                <div className={styles.iconPreview}>
-                  {IconComponent ? <IconComponent /> : "?"}
-                </div>
-                <div className={styles.iconName}>{icon.name}</div>
-                <div className={styles.iconVariant}>{icon.category}</div>
-                {icon.availableSizes && icon.availableSizes.length > 0 && (
-                  <div className={styles.iconSizes}>
-                    {icon.availableSizes.join(" ")}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {displayData.icons.map((icon) => (
+            <IconCard
+              key={icon.name}
+              icon={icon}
+              isSelected={selectedIcon?.name === icon.name || 
+                Boolean(selectedIcon && icon.name.includes(selectedIcon.name.replace(/\d+/, '')))}
+              onSelect={(iconWithSize) => setSelectedIcon(iconWithSize)}
+            />
+          ))}
         </div>
       ) : displayData ? (
         <div className={styles.emptyState}>
@@ -403,6 +481,8 @@ function MyComponent() {
 // Mount the app
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <FluentUIIconsApp />
+    <FluentProvider theme={webLightTheme}>
+      <FluentUIIconsApp />
+    </FluentProvider>
   </StrictMode>
 );

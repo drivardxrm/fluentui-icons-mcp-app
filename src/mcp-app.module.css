@@ -130,6 +130,23 @@
   letter-spacing: 2px;
 }
 
+.sizeToggleGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-subtle, #e8e8e8);
+  justify-content: center;
+}
+
+.sizeToggleButton {
+  min-width: 32px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
 .detailPanel {
   margin-top: 24px;
   background: var(--color-background-secondary, #f5f5f5);

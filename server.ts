@@ -30,15 +30,6 @@ interface IconResult {
 }
 
 /**
- * Get all available icon names from the pre-generated static list
- * Icons follow the pattern: {Name}{Variant}
- * e.g., AddRegular, AddFilled, ArrowLeftRegular
- */
-function getFluentIconNames(): string[] {
-  return FLUENT_ICON_NAMES as unknown as string[];
-}
-
-/**
  * Parse icon name to extract components (unsized icons)
  */
 function parseIconName(name: string): { baseName: string; variant: string } {
