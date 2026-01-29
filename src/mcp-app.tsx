@@ -206,10 +206,17 @@ interface IconCardProps {
   icon: IconResult;
   isSelected: boolean;
   onSelect: (icon: IconResult, selectedSize: string | null) => void;
+  /** Controlled size from parent (used when selected) */
+  controlledSize?: string | null;
+  /** Callback when size changes (used when selected) */
+  onSizeChange?: (size: string | null) => void;
 }
 
-function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+function IconCard({ icon, isSelected, onSelect, controlledSize, onSizeChange }: IconCardProps) {
+  const [internalSize, setInternalSize] = useState<string | null>(null);
+  
+  // Use controlled size when selected and provided, otherwise use internal state
+  const selectedSize = isSelected && controlledSize !== undefined ? controlledSize : internalSize;
   
   // Build size options: "--" for unsized, then available pixel sizes
   const sizeOptions = useMemo(() => {
@@ -232,18 +239,22 @@ function IconCard({ icon, isSelected, onSelect }: IconCardProps) {
   
   const handleSizeClick = useCallback((size: string | null, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card selection when clicking size buttons
-    setSelectedSize(size);
+    setInternalSize(size);
+    
+    // If controlled, notify parent of size change
+    if (onSizeChange) {
+      onSizeChange(size);
+    }
     
     // Update selected icon with new size
     const newDisplayName = getSizedIconName(icon.name, size);
-    const newIconSizePx = size ? parseInt(size, 10) : 32;
     onSelect({ 
       ...icon, 
       name: newDisplayName,
       jsxElement: `<${newDisplayName} />`,
       importStatement: `import { ${newDisplayName} } from "@fluentui/react-icons";`
     }, size);
-  }, [icon, onSelect]);
+  }, [icon, onSelect, onSizeChange]);
   
   const handleCardClick = useCallback(() => {
     onSelect({ 
@@ -299,6 +310,7 @@ function FluentUIIconsAppInner({
 }: AppInnerProps) {
   const [selectedIcon, setSelectedIcon] = useState<IconResult | null>(null);
   const [selectedIconSize, setSelectedIconSize] = useState<string | null>(null);
+  const [selectedBaseIcon, setSelectedBaseIcon] = useState<IconResult | null>(null); // Original icon from search
   const [copied, setCopied] = useState(false);
   
   // Copy JSX to clipboard with indicator
@@ -409,18 +421,23 @@ function FluentUIIconsAppInner({
       {/* Icons Grid */}
       {displayData && displayData.icons.length > 0 ? (
         <div className={styles.iconsGrid}>
-          {displayData.icons.map((icon) => (
+          {displayData.icons.map((icon) => {
+              const isCardSelected = selectedBaseIcon?.name === icon.name;
+              return (
               <IconCard
                 key={icon.name}
                 icon={icon}
-                isSelected={selectedIcon?.name === icon.name || 
-                  Boolean(selectedIcon && icon.name.includes(selectedIcon.name.replace(/\d+/, '')))}
+                isSelected={isCardSelected}
                 onSelect={(iconWithSize, size) => {
                   setSelectedIcon(iconWithSize);
                   setSelectedIconSize(size);
+                  setSelectedBaseIcon(icon); // Store the original unsized icon
                 }}
+                controlledSize={isCardSelected ? selectedIconSize : undefined}
+                onSizeChange={isCardSelected ? setSelectedIconSize : undefined}
               />
-            ))}
+            );
+          })}
         </div>
       ) : displayData ? (
         <div className={styles.emptyState}>
@@ -436,8 +453,13 @@ function FluentUIIconsAppInner({
         </div>
       )}
 
+      {/* Selected Icon Divider */}
+      {selectedIcon && selectedBaseIcon && (
+        <Divider className={styles.selectedIconDivider}>Selected Icon</Divider>
+      )}
+
       {/* Detail Panel */}
-      {selectedIcon && (
+      {selectedIcon && selectedBaseIcon && (
         <div className={styles.detailPanel}>
           <div className={styles.detailHeader}>
             <div className={styles.detailIcon}>
@@ -450,6 +472,58 @@ function FluentUIIconsAppInner({
               })()}
             </div>
             <h2 className={styles.detailTitle}>{selectedIcon.name}</h2>
+            
+            {/* Size Toggle Buttons beside icon name */}
+            {selectedBaseIcon.availableSizes && selectedBaseIcon.availableSizes.length > 0 && (
+              <div className={styles.detailSizeToggleContainer}>
+                <span className={styles.sizeLabel}>Size</span>
+                <div className={styles.sizeToggleGroup}>
+                  <ToggleButton
+                    size="small"
+                    shape="rounded"
+                    appearance={selectedIconSize === null ? "secondary" : "subtle"}
+                    checked={selectedIconSize === null}
+                    onClick={() => {
+                      setSelectedIconSize(null);
+                      // Update selectedIcon to match
+                      const newDisplayName = getSizedIconName(selectedBaseIcon.name, null);
+                      setSelectedIcon({
+                        ...selectedBaseIcon,
+                        name: newDisplayName,
+                        jsxElement: `<${newDisplayName} />`,
+                        importStatement: `import { ${newDisplayName} } from "@fluentui/react-icons";`
+                      });
+                    }}
+                    className={styles.sizeToggleButton}
+                  >
+                    --
+                  </ToggleButton>
+                  {selectedBaseIcon.availableSizes.map((size) => (
+                    <ToggleButton
+                      key={size}
+                      size="small"
+                      shape="rounded"
+                      appearance={selectedIconSize === size ? "secondary" : "subtle"}
+                      checked={selectedIconSize === size}
+                      onClick={() => {
+                        setSelectedIconSize(size);
+                        // Update selectedIcon to match
+                        const newDisplayName = getSizedIconName(selectedBaseIcon.name, size);
+                        setSelectedIcon({
+                          ...selectedBaseIcon,
+                          name: newDisplayName,
+                          jsxElement: `<${newDisplayName} />`,
+                          importStatement: `import { ${newDisplayName} } from "@fluentui/react-icons";`
+                        });
+                      }}
+                      className={styles.sizeToggleButton}
+                    >
+                      {size}
+                    </ToggleButton>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className={styles.codeLabel}>Import Statement</div>

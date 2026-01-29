@@ -204,8 +204,12 @@
   line-height: 1;
 }
 
-.detailPanel {
+.selectedIconDivider {
   margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.detailPanel {
   background: var(--color-background-secondary, #f5f5f5);
   border: 1px solid var(--color-border-default, #e0e0e0);
   border-radius: var(--border-radius-lg, 8px);
@@ -228,6 +232,18 @@
   font-size: var(--font-heading-md-size, 18px);
   font-weight: var(--font-weight-semibold, 600);
   margin: 0;
+}
+
+.detailSizeToggleContainer {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.sizeLabel {
+  font-size: var(--font-text-sm-size, 12px);
+  color: var(--color-text-secondary, #616161);
+  margin-right: 8px;
 }
 
 .codeBlock {
