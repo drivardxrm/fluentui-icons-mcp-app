@@ -22,6 +22,7 @@ import synonymsLib from "synonyms";
 import { FLUENT_ICON_NAMES } from "../icon-names.js";
 import { getIconSizes } from "../icon-sizes.js";
 import { TAG_DICTIONARY, ICON_VISUAL_TAGS } from "../icon-visual-tags.js";
+import type { IconResult } from "../types/icons.js";
 
 // ============================================================================
 // DEBUG CONFIGURATION
@@ -45,37 +46,6 @@ interface IconSearchItem {
   baseName: string;
   /** Variant type: "Regular", "Filled", or "Color" */
   variant: string;
-}
-
-/**
- * Icon data structure returned by the search service.
- * Contains all information needed to use the icon in code.
- */
-export interface IconResult {
-  /** Full icon component name */
-  name: string;
-  /** Optional display-friendly name */
-  displayName?: string;
-  /** Ready-to-use JSX element string */
-  jsxElement: string;
-  /** Complete import statement for the icon */
-  importStatement: string;
-  /** Icon category (variant type) */
-  category: string;
-  /** List of available sizes for sized variants (e.g., ["16", "20", "24"]) */
-  availableSizes?: string[];
-  /** Combined relevance score (0-100, higher = more relevant) */
-  score?: number;
-  /** Primary search layer that contributed most to the score */
-  scoreLayer?: 'exact' | 'substring' | 'fuzzy' | 'semantic' | 'visual' | 'wordnet';
-  /** Breakdown of score contributions from each layer */
-  scoreBreakdown?: {
-    substring: number;  // 0-100 (exact word = 100, partial = 15)
-    fuzzy: number;      // 0-15 (Fuse.js name similarity)
-    semantic: number;   // 0-25 (concept mapping)
-    visual: number;     // 0-25 (visual tag matching)
-    synonym: number;    // 0-20 (dictionary expansion)
-  };
 }
 
 // ============================================================================
@@ -1287,3 +1257,4 @@ export async function searchIcons(
 // ============================================================================
 
 export { semanticIconMapping };
+export type { IconResult };

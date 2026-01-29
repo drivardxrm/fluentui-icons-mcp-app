@@ -14,16 +14,6 @@ export const useAppStyles = makeStyles({
     color: tokens.colorNeutralForeground1,
   },
 
-  stickyHeader: {
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-    backgroundColor: tokens.colorNeutralBackground1,
-    paddingBottom: "16px",
-    ...shorthands.margin("-16px", "-16px", "0", "-16px"),
-    ...shorthands.padding("16px"),
-  },
-
   header: {
     marginBottom: "20px",
   },
@@ -74,13 +64,6 @@ export const useAppStyles = makeStyles({
     ...shorthands.margin("0"),
   },
 
-  searchRow: {
-    display: "flex",
-    ...shorthands.gap("16px"),
-    marginBottom: "20px",
-    alignItems: "stretch",
-  },
-
   searchBox: {
     display: "flex",
     alignItems: "center",
@@ -114,71 +97,6 @@ export const useAppStyles = makeStyles({
 
   thresholdSlider: {
     width: "100%",
-  },
-
-  selectedIconBox: {
-    display: "flex",
-    alignItems: "center",
-    ...shorthands.gap("10px"),
-    ...shorthands.padding("8px", "12px"),
-    backgroundColor: tokens.colorNeutralBackground2,
-    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    minWidth: "200px",
-  },
-
-  selectedIconPreview: {
-    fontSize: "24px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: tokens.colorNeutralForeground1,
-  },
-
-  selectedIconJsx: {
-    fontSize: tokens.fontSizeBase200,
-    fontFamily: tokens.fontFamilyMonospace,
-    color: tokens.colorNeutralForeground1,
-    whiteSpace: "nowrap",
-    ...shorthands.overflow("hidden"),
-    textOverflow: "ellipsis",
-    maxWidth: "150px",
-  },
-
-  selectedIconPlaceholder: {
-    fontSize: tokens.fontSizeBase200,
-    color: tokens.colorNeutralForeground3,
-    fontStyle: "italic",
-  },
-
-  copiedButton: {
-    color: `${tokens.colorStatusSuccessForeground1} !important`,
-  },
-
-  resultsHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "16px",
-    flexWrap: "wrap",
-    ...shorthands.gap("12px"),
-  },
-
-  resultsInfo: {
-    fontSize: tokens.fontSizeBase200,
-    color: tokens.colorNeutralForeground2,
-  },
-
-  variantFilterGroup: {
-    display: "flex",
-    ...shorthands.gap("6px"),
-  },
-
-  variantToggleButton: {
-    minWidth: "60px",
-    ...shorthands.padding("4px", "10px"),
-    fontSize: "11px",
-    height: "24px !important" as "24px",
   },
 
   resultsDivider: {
@@ -283,22 +201,6 @@ export const useAppStyles = makeStyles({
     textAlign: "center",
     wordBreak: "break-word",
     color: tokens.colorNeutralForeground1,
-  },
-
-  iconVariant: {
-    fontSize: tokens.fontSizeBase100,
-    color: tokens.colorNeutralForeground2,
-    marginTop: "4px",
-  },
-
-  iconSizes: {
-    fontSize: tokens.fontSizeBase100,
-    color: tokens.colorNeutralForeground3,
-    marginTop: "8px",
-    paddingTop: "8px",
-    ...shorthands.borderTop("1px", "solid", tokens.colorNeutralStroke2),
-    fontFamily: tokens.fontFamilyMonospace,
-    letterSpacing: "2px",
   },
 
   sizeToggleGroup: {
