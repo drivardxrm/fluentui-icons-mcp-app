@@ -1,7 +1,7 @@
 /**
  * @file IconsGrid component - displays grid of icons with empty states
  */
-import { Search24Regular } from "@fluentui/react-icons";
+import { Search24Regular, SearchInfo24Regular } from "@fluentui/react-icons";
 import { useAppStyles } from "../mcp-app.styles";
 import { IconCard } from "./IconCard";
 import type { IconResult, StructuredContent } from "../types/icons";
@@ -53,7 +53,9 @@ export function IconsGrid({
   if (displayData) {
     return (
       <div className={styles.emptyState}>
-        <div className={styles.emptyIcon}>🔍</div>
+        <div className={styles.emptyIcon}>
+          <SearchInfo24Regular />
+        </div>
         <p>No icons found. Try a different search term.</p>
       </div>
     );

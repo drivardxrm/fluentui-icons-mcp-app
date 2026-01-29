@@ -546,6 +546,32 @@ const semanticIconMapping: Record<string, string[]> = {
   bicycle: ["Bicycle", "Vehicle"],
   
   // -------------------------------------------------------------------------
+  // COLORS & PAINTING
+  // -------------------------------------------------------------------------
+  color: ["Color", "ColorFill", "ColorLine", "ColorBackground", "PaintBrush", "PaintBucket", "Palette", "Eyedropper"],
+  paint: ["PaintBrush", "PaintBucket", "Color", "ColorFill", "Eyedropper", "Ink"],
+  palette: ["Color", "ColorFill", "PaintBrush", "PaintBucket"],
+  brush: ["PaintBrush", "Ink", "Draw", "Color"],
+  fill: ["ColorFill", "PaintBucket", "Color", "ColorBackground"],
+  eyedropper: ["Eyedropper", "Color", "ColorFill"],
+  // Common color terms - map to color/paint icons since no color-specific icons exist
+  red: ["Color", "ColorFill", "Circle", "Heart", "Flag", "Error", "Dismiss", "Fire"],
+  blue: ["Color", "ColorFill", "Circle", "Drop", "Water", "Cloud", "Info"],
+  green: ["Color", "ColorFill", "Circle", "Leaf", "Checkmark", "CheckCircle", "Plant"],
+  yellow: ["Color", "ColorFill", "Circle", "Star", "Sun", "Lightbulb", "Warning", "Alert"],
+  orange: ["Color", "ColorFill", "Circle", "Fire", "Warning", "Alert"],
+  purple: ["Color", "ColorFill", "Circle", "Sparkle", "Star"],
+  pink: ["Color", "ColorFill", "Circle", "Heart", "Sparkle"],
+  black: ["Color", "ColorFill", "Circle", "Moon", "Dark"],
+  white: ["Color", "ColorFill", "Circle", "Sun", "Light"],
+  gray: ["Color", "ColorFill", "Circle", "Cloud"],
+  grey: ["Color", "ColorFill", "Circle", "Cloud"],
+  brown: ["Color", "ColorFill", "Circle", "Tree", "Leaf"],
+  cyan: ["Color", "ColorFill", "Circle", "Drop", "Water"],
+  magenta: ["Color", "ColorFill", "Circle", "Heart", "Sparkle"],
+  teal: ["Color", "ColorFill", "Circle", "Drop", "Water"],
+  
+  // -------------------------------------------------------------------------
   // MISCELLANEOUS
   // -------------------------------------------------------------------------
   tag: ["Tag", "Label", "Hashtag"],
