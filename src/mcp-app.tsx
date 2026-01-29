@@ -6,7 +6,7 @@ import type { App, McpUiHostContext } from "@modelcontextprotocol/ext-apps";
 import { useApp, useHostStyles } from "@modelcontextprotocol/ext-apps/react";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { Search24Regular } from "@fluentui/react-icons";
-import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider } from "@fluentui/react-components";
+import { FluentProvider, webLightTheme, webDarkTheme, ToggleButton, Divider, SearchBox } from "@fluentui/react-components";
 import { getIconComponent } from "./icon-registry";
 import { StrictMode, useCallback, useEffect, useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
@@ -365,22 +365,15 @@ function FluentUIIconsAppInner({
 
         {/* Search Box */}
         <div className={styles.searchBox}>
-          <input
-            type="text"
+          <SearchBox
             className={styles.searchInput}
             placeholder="Search icons (e.g., 'add', 'calendar', 'arrow')"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e, data) => setSearchQuery(data.value)}
             onKeyDown={handleKeyDown}
             disabled={isSearching}
+            size="large"
           />
-          <button
-            className={styles.searchButton}
-            onClick={handleSearch}
-            disabled={isSearching || !searchQuery.trim()}
-          >
-            {isSearching ? "Searching..." : "Search"}
-          </button>
         </div>
 
         {/* Error State */}
