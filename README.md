@@ -150,6 +150,8 @@ The search uses **multi-layered additive scoring** where all matching layers con
 | **Fuzzy** | 15 | Fuse.js name similarity for typo tolerance |
 
 #### How Scoring Works
+<img width="377" height="308" alt="image" src="https://github.com/user-attachments/assets/fcec4455-b474-4976-b330-683284dc91ce" />
+
 
 1. **Additive scoring**: Each layer adds points independently. An icon matching multiple layers scores higher than one matching a single layer.
 
