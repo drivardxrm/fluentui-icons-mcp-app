@@ -12,8 +12,9 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "dist",
-    "rootDir": "."
+    "rootDir": ".",
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": ["server.ts", "main.ts"],
-  "exclude": ["node_modules", "src"]
+  "include": ["server.ts", "main.ts", "src/types/**/*.d.ts", "src/services/**/*.ts"],
+  "exclude": ["node_modules"]
 }

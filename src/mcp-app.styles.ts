@@ -7,25 +7,14 @@ import { makeStyles, shorthands, tokens } from "@fluentui/react-components";
 export const useAppStyles = makeStyles({
   app: {
     fontFamily: tokens.fontFamilyBase,
-    ...shorthands.padding("16px"),
-    minHeight: "100vh",
+    ...shorthands.padding("12px"),
     boxSizing: "border-box",
     backgroundColor: tokens.colorNeutralBackground1,
     color: tokens.colorNeutralForeground1,
   },
 
-  stickyHeader: {
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-    backgroundColor: tokens.colorNeutralBackground1,
-    paddingBottom: "16px",
-    ...shorthands.margin("-16px", "-16px", "0", "-16px"),
-    ...shorthands.padding("16px"),
-  },
-
   header: {
-    marginBottom: "20px",
+    marginBottom: "12px",
   },
 
   headerRow: {
@@ -37,20 +26,36 @@ export const useAppStyles = makeStyles({
   titleContainer: {
     display: "flex",
     alignItems: "center",
-    ...shorthands.gap("12px"),
+    ...shorthands.gap("8px"),
   },
 
   mcpLogo: {
-    width: "40px",
-    height: "40px",
+    width: "32px",
+    height: "32px",
     objectFit: "contain",
   },
 
   title: {
-    fontSize: tokens.fontSizeHero800,
+    fontSize: tokens.fontSizeHero700,
     fontWeight: tokens.fontWeightSemibold,
-    ...shorthands.margin("0", "0", "8px", "0"),
+    ...shorthands.margin("0", "0", "4px", "0"),
     color: tokens.colorNeutralForeground1,
+  },
+
+  headerRightControls: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("16px"),
+  },
+
+  scoringInfoContainer: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("2px"),
+  },
+
+  scoringLabel: {
+    color: tokens.colorNeutralForeground2,
   },
 
   themeToggleContainer: {
@@ -69,89 +74,44 @@ export const useAppStyles = makeStyles({
   },
 
   subtitle: {
-    fontSize: tokens.fontSizeBase300,
+    fontSize: tokens.fontSizeBase200,
     color: tokens.colorNeutralForeground2,
     ...shorthands.margin("0"),
   },
 
-  searchRow: {
-    display: "flex",
-    ...shorthands.gap("16px"),
-    marginBottom: "20px",
-    alignItems: "stretch",
-  },
-
   searchBox: {
+    display: "flex",
+    alignItems: "center",
+    ...shorthands.gap("12px"),
     flexGrow: 1,
   },
 
   searchInput: {
-    width: "100%",
+    flexGrow: 1,
+    minWidth: "180px",
   },
 
-  selectedIconBox: {
+  thresholdContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    minWidth: "120px",
+  },
+
+  thresholdLabel: {
     display: "flex",
     alignItems: "center",
-    ...shorthands.gap("10px"),
-    ...shorthands.padding("8px", "12px"),
-    backgroundColor: tokens.colorNeutralBackground2,
-    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    minWidth: "200px",
+    ...shorthands.gap("4px"),
+    marginBottom: "2px",
   },
 
-  selectedIconPreview: {
-    fontSize: "24px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: tokens.colorNeutralForeground1,
-  },
-
-  selectedIconJsx: {
-    fontSize: tokens.fontSizeBase200,
-    fontFamily: tokens.fontFamilyMonospace,
-    color: tokens.colorNeutralForeground1,
-    whiteSpace: "nowrap",
-    ...shorthands.overflow("hidden"),
-    textOverflow: "ellipsis",
-    maxWidth: "150px",
-  },
-
-  selectedIconPlaceholder: {
-    fontSize: tokens.fontSizeBase200,
+  thresholdInfo: {
     color: tokens.colorNeutralForeground3,
-    fontStyle: "italic",
+    cursor: "help",
   },
 
-  copiedButton: {
-    color: `${tokens.colorStatusSuccessForeground1} !important`,
-  },
-
-  resultsHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "16px",
-    flexWrap: "wrap",
-    ...shorthands.gap("12px"),
-  },
-
-  resultsInfo: {
-    fontSize: tokens.fontSizeBase200,
-    color: tokens.colorNeutralForeground2,
-  },
-
-  variantFilterGroup: {
-    display: "flex",
-    ...shorthands.gap("6px"),
-  },
-
-  variantToggleButton: {
-    minWidth: "60px",
-    ...shorthands.padding("4px", "10px"),
-    fontSize: "11px",
-    height: "24px !important" as "24px",
+  thresholdSlider: {
+    width: "100%",
   },
 
   resultsDivider: {
@@ -163,129 +123,154 @@ export const useAppStyles = makeStyles({
 
   iconsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-    ...shorthands.gap("12px"),
+    gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+    ...shorthands.gap("6px"),
   },
 
   iconCard: {
     backgroundColor: tokens.colorNeutralBackground2,
     ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderRadius(tokens.borderRadiusLarge),
-    ...shorthands.padding("16px"),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.padding("6px"),
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     cursor: "pointer",
     transitionProperty: "all",
-    transitionDuration: "0.15s",
+    transitionDuration: "0.1s",
     transitionTimingFunction: "ease",
+    position: "relative",
     ":hover": {
       ...shorthands.borderColor(tokens.colorBrandStroke1),
-      transform: "translateY(-2px)",
-      boxShadow: tokens.shadow8,
+      boxShadow: tokens.shadow4,
     },
   },
 
   iconCardSelected: {
     ...shorthands.borderColor(tokens.colorBrandStroke1),
     backgroundColor: tokens.colorBrandBackground2,
-    position: "relative",
+  },
+
+  scoreBadge: {
+    position: "absolute",
+    top: "2px",
+    left: "2px",
+    cursor: "help",
+    fontWeight: 600,
+    minWidth: "18px",
+    fontSize: "9px",
+  },
+
+  // Score badge color variants - theme-aware colors with clear visual distinction
+  scoreBadgeExcellent: {
+    // Green for excellent matches (80-100)
+    backgroundColor: tokens.colorPaletteGreenBackground2,
+    color: tokens.colorPaletteGreenForeground2,
+  },
+
+  scoreBadgeGood: {
+    // Blue/brand for good matches (50-79)
+    backgroundColor: tokens.colorBrandBackground2,
+    color: tokens.colorBrandForeground1,
+  },
+
+  scoreBadgeModerate: {
+    // Yellow/marigold for moderate matches (25-49)
+    backgroundColor: tokens.colorPaletteMarigoldBackground2,
+    color: tokens.colorPaletteMarigoldForeground2,
+  },
+
+  scoreBadgeWeak: {
+    // Gray/muted for weak matches (0-24)
+    backgroundColor: tokens.colorNeutralBackground5,
+    color: tokens.colorNeutralForeground4,
   },
 
   iconCardActionButtons: {
     position: "absolute",
-    top: "4px",
-    right: "4px",
+    top: "2px",
+    right: "2px",
     display: "flex",
-    gap: "2px",
+    gap: "0px",
   },
 
   iconCardCopyButton: {
-    fontSize: tokens.fontSizeBase100,
+    fontSize: "9px",
+    minWidth: "18px",
+    height: "18px",
+    ...shorthands.padding("0"),
   },
 
   iconPreview: {
-    minHeight: "48px",
+    minHeight: "28px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: "12px",
+    marginBottom: "2px",
+    marginTop: "10px",
     color: tokens.colorNeutralForeground1,
-    transitionProperty: "font-size",
-    transitionDuration: "0.15s",
-    transitionTimingFunction: "ease",
   },
 
   iconName: {
-    fontSize: tokens.fontSizeBase200,
+    fontSize: "9px",
     fontWeight: tokens.fontWeightMedium,
     textAlign: "center",
     wordBreak: "break-word",
-    color: tokens.colorNeutralForeground1,
-  },
-
-  iconVariant: {
-    fontSize: tokens.fontSizeBase100,
     color: tokens.colorNeutralForeground2,
-    marginTop: "4px",
-  },
-
-  iconSizes: {
-    fontSize: tokens.fontSizeBase100,
-    color: tokens.colorNeutralForeground3,
-    marginTop: "8px",
-    paddingTop: "8px",
-    ...shorthands.borderTop("1px", "solid", tokens.colorNeutralStroke2),
-    fontFamily: tokens.fontFamilyMonospace,
-    letterSpacing: "2px",
+    lineHeight: "1.2",
+    maxHeight: "2.4em",
+    overflow: "hidden",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
   },
 
   sizeToggleGroup: {
     display: "flex",
     flexWrap: "wrap",
-    ...shorthands.gap("4px"),
-    marginTop: "12px",
-    paddingTop: "12px",
+    ...shorthands.gap("2px"),
+    marginTop: "4px",
+    paddingTop: "4px",
     ...shorthands.borderTop("1px", "solid", tokens.colorNeutralStroke2),
     justifyContent: "center",
   },
 
   sizeToggleButton: {
-    minWidth: "24px !important" as "24px",
-    maxWidth: "28px",
-    ...shorthands.padding("0", "4px"),
-    fontSize: "10px",
+    minWidth: "18px !important" as "18px",
+    maxWidth: "22px",
+    ...shorthands.padding("0", "2px"),
+    fontSize: "8px",
     fontFamily: tokens.fontFamilyMonospace,
-    height: "20px !important" as "20px",
+    height: "14px !important" as "14px",
     lineHeight: "1",
   },
 
   selectedIconDivider: {
-    marginTop: "24px",
-    marginBottom: "16px",
+    marginTop: "12px",
+    marginBottom: "8px",
   },
 
   detailPanel: {
     backgroundColor: tokens.colorNeutralBackground2,
     ...shorthands.border("1px", "solid", tokens.colorNeutralStroke1),
-    ...shorthands.borderRadius(tokens.borderRadiusLarge),
-    ...shorthands.padding("20px"),
+    ...shorthands.borderRadius(tokens.borderRadiusMedium),
+    ...shorthands.padding("12px"),
   },
 
   detailHeader: {
     display: "flex",
     alignItems: "center",
-    ...shorthands.gap("16px"),
-    marginBottom: "16px",
+    ...shorthands.gap("12px"),
+    marginBottom: "10px",
   },
 
   detailIcon: {
-    fontSize: "48px",
+    fontSize: "36px",
     color: tokens.colorNeutralForeground1,
   },
 
   detailTitle: {
-    fontSize: tokens.fontSizeBase500,
+    fontSize: tokens.fontSizeBase400,
     fontWeight: tokens.fontWeightSemibold,
     ...shorthands.margin("0"),
   },
@@ -306,11 +291,11 @@ export const useAppStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground6,
     color: tokens.colorNeutralForeground1,
     ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    ...shorthands.padding("12px", "16px"),
+    ...shorthands.padding("8px", "10px"),
     fontFamily: tokens.fontFamilyMonospace,
     fontSize: tokens.fontSizeBase200,
     overflowX: "auto",
-    marginBottom: "12px",
+    marginBottom: "8px",
     position: "relative",
   },
 
@@ -337,10 +322,10 @@ export const useAppStyles = makeStyles({
 
   copyButton: {
     position: "absolute",
-    top: "8px",
-    right: "8px",
-    ...shorthands.padding("4px", "8px"),
-    fontSize: "11px",
+    top: "4px",
+    right: "4px",
+    ...shorthands.padding("2px", "6px"),
+    fontSize: "10px",
     backgroundColor: tokens.colorNeutralBackground1Hover,
     color: tokens.colorNeutralForeground1,
     ...shorthands.border("none"),
@@ -353,7 +338,7 @@ export const useAppStyles = makeStyles({
 
   loading: {
     textAlign: "center",
-    ...shorthands.padding("40px"),
+    ...shorthands.padding("32px"),
     color: tokens.colorNeutralForeground2,
   },
 
@@ -361,20 +346,20 @@ export const useAppStyles = makeStyles({
     backgroundColor: tokens.colorStatusDangerBackground1,
     ...shorthands.border("1px", "solid", tokens.colorStatusDangerBorder1),
     ...shorthands.borderRadius(tokens.borderRadiusMedium),
-    ...shorthands.padding("12px", "16px"),
+    ...shorthands.padding("8px", "12px"),
     color: tokens.colorStatusDangerForeground1,
-    marginBottom: "16px",
+    marginBottom: "8px",
   },
 
   emptyState: {
     textAlign: "center",
-    ...shorthands.padding("60px", "20px"),
+    ...shorthands.padding("32px", "16px"),
     color: tokens.colorNeutralForeground2,
   },
 
   emptyIcon: {
-    fontSize: "48px",
-    marginBottom: "16px",
+    fontSize: "36px",
+    marginBottom: "8px",
     opacity: 0.5,
   },
 });

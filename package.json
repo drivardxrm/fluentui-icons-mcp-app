@@ -9,7 +9,12 @@
     "watch": "cross-env INPUT=mcp-app.html vite build --watch",
     "serve": "tsx main.ts",
     "start": "cross-env NODE_ENV=development npm run build && npm run serve",
-    "dev": "cross-env NODE_ENV=development concurrently \"npm run watch\" \"npm run serve\""
+    "dev": "cross-env NODE_ENV=development concurrently \"npm run watch\" \"npm run serve\"",
+    "generate:icons": "tsx scripts/generate-icon-list.ts",
+    "generate:sizes": "tsx scripts/generate-icon-sizes.ts",
+    "generate:registry": "tsx scripts/generate-icon-registry.ts",
+    "generate:tags": "tsx scripts/generate-icon-visual-tags.ts",
+    "generate:all": "npm run generate:icons && npm run generate:sizes && npm run generate:registry && npm run generate:tags"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.56.0",
@@ -22,6 +27,7 @@
     "natural": "^8.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "synonyms": "^1.0.1",
     "zod": "^3.24.0"
   },
   "devDependencies": {
