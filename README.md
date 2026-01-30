@@ -48,6 +48,8 @@ npm run dev
 
 ## Usage with VS Code
 
+> ⚠️ **Note:** VS Code Insiders is currently required to use MCP Apps. This requirement is temporary until the feature is available in the stable release.
+
 ### Option 1: User Settings (Global)
 
 Add this to your VS Code User Settings (`settings.json`):
