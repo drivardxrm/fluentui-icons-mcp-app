@@ -18,7 +18,6 @@ An **MCP App** showcasing the new **rich UI capabilities** of the Model Context 
 <img width="974" height="475" alt="image" src="https://github.com/user-attachments/assets/94324d86-0ae6-48c2-815c-21c1cc1ec91a" />
 
 - 🌙 **Dark/Light Mode** - Toggle between themes with persistent preference
-- 🎨 **Fluent UI Styling** - Built with Griffel and Fluent UI tokens
 
 ## Quick Start
 
