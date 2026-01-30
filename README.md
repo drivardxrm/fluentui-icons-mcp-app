@@ -14,10 +14,7 @@ An **MCP App** showcasing the new **rich UI capabilities** of the Model Context 
 - 📏 **Size Variants** - Toggle between unsized and pixel-specific icon sizes (10, 12, 16, 20, 24, 28, 32, 48)
 - 👀 **Visual Preview** - See icons rendered in a grid with live previews
 - 📋 **Copy Code** - Get ready-to-use JSX and import statements
-- 📥 **Add Import** - Insert import statements directly into your code via Copilot
-<img width="974" height="475" alt="image" src="https://github.com/user-attachments/assets/94324d86-0ae6-48c2-815c-21c1cc1ec91a" />
-
-- 🌙 **Dark/Light Mode** - Toggle between themes with persistent preference
+- 🌙 **Dark/Light Mode** - Preview icons in dark or light theme to match your app's design
 
 ## Quick Start
 
