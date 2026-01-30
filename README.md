@@ -10,7 +10,7 @@ An **MCP App** showcasing the new **rich UI capabilities** of the Model Context 
 
 ## Features
 
-- 🔍 **Fuzzy Search** - Natural language search with semantic matching and WordNet synonyms
+- 🎯 **Multi-Layer Scoring** - Intelligent search combining exact matches, semantic concepts, visual tags, WordNet synonyms, and fuzzy matching
 - 📏 **Size Variants** - Toggle between unsized and pixel-specific icon sizes (10, 12, 16, 20, 24, 28, 32, 48)
 - 👀 **Visual Preview** - See icons rendered in a grid with live previews
 - 📋 **Copy Code** - Get ready-to-use JSX and import statements
@@ -89,33 +89,17 @@ Create or edit `.vscode/mcp.json` in your workspace:
 4. The MCP App UI will appear with search results
 5. Click an icon to see details, copy JSX, or add the import to your file
 
-## Usage with Claude Desktop
-
-Add this to your Claude Desktop configuration file:
-
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "fluentui-icons": {
-      "url": "http://localhost:3001/mcp"
-    }
-  }
-}
-```
-
 ## Testing with Basic Host
 
-You can test the MCP App using the basic-host from the ext-apps repository:
+You can test the MCP App using the basic-host example from the [MCP ext-apps repository](https://github.com/anthropics/ext-apps):
 
 ```bash
 # Terminal 1: Run your server
 npm run serve
 
-# Terminal 2: Run basic-host (from cloned ext-apps repo)
-cd temp-mcp-reference/examples/basic-host
+# Terminal 2: Clone and run basic-host
+git clone https://github.com/anthropics/ext-apps.git
+cd ext-apps/examples/basic-host
 npm install
 SERVERS='["http://localhost:3001/mcp"]' npm run start
 # Open http://localhost:8080
@@ -173,8 +157,6 @@ Click the **ℹ️ Scoring** button in the header to see this breakdown in the U
    - ⚫ **Gray** (0-24): Weak match
 
 5. **Threshold parameter**: Controls fuzzy matching strictness (0 = exact only, 1 = match anything). Default is 0.1 (strict). This applies to all fuzzy operations across all layers.
-
-Icons matching multiple layers rank higher. The `threshold` parameter controls fuzzy matching strictness across all layers.
 
 ### Example Prompts
 
