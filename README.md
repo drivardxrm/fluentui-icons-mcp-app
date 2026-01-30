@@ -16,7 +16,35 @@ An **MCP App** showcasing the new **rich UI capabilities** of the Model Context 
 - 📋 **Copy Code** - Get ready-to-use JSX and import statements
 - 🌙 **Dark/Light Mode** - Preview icons in dark or light theme to match your app's design
 
-## Quick Start
+## 🚀 Try It Now — No Setup Required!
+
+**Want to try it immediately?** Use the public hosted server — just add this to your VS Code settings and start searching for icons!
+
+> ⚠️ **Note:** VS Code Insiders is currently required to use MCP Apps. This requirement is temporary until the feature is available in the stable release.
+
+Add to your **User Settings** (`settings.json`) or **Workspace Settings** (`.vscode/mcp.json`):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "fluentui-icons": {
+        "url": "https://fluentui-icons-mcp.onrender.com/mcp"
+      }
+    }
+  }
+}
+```
+
+Then open GitHub Copilot Chat and ask: *"Find me a calendar icon"* ✨
+
+> 💡 **Tip:** The server runs on Render's free tier. The first request may take 30-50 seconds if the server is cold (spins down after 15 min of inactivity).
+
+---
+
+## Run Locally
+
+If you prefer to run the server locally or want to contribute:
 
 ### 1. Install Dependencies
 
@@ -46,9 +74,7 @@ For development with hot-reload:
 npm run dev
 ```
 
-## Usage with VS Code
-
-> ⚠️ **Note:** VS Code Insiders is currently required to use MCP Apps. This requirement is temporary until the feature is available in the stable release.
+## Configure VS Code for Local Server
 
 ### Option 1: User Settings (Global)
 
@@ -78,25 +104,6 @@ Create or edit `.vscode/mcp.json` in your workspace:
     }
   }
 }
-```
-
-## Public Hosted Server
-
-A publicly hosted version is available on Render (free tier, may have cold start delay):
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "fluentui-icons": {
-        "url": "https://fluentui-icons-mcp.onrender.com/mcp"
-      }
-    }
-  }
-}
-```
-
-> ⚠️ **Note:** The free tier spins down after 15 minutes of inactivity. The first request may take 30-50 seconds while the server wakes up.
 ```
 
 ### Using the App
