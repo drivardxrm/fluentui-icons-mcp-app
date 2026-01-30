@@ -80,6 +80,25 @@ Create or edit `.vscode/mcp.json` in your workspace:
 }
 ```
 
+## Public Hosted Server
+
+A publicly hosted version is available on Render (free tier, may have cold start delay):
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "fluentui-icons": {
+        "url": "https://fluentui-icons-mcp.onrender.com/mcp"
+      }
+    }
+  }
+}
+```
+
+> ⚠️ **Note:** The free tier spins down after 15 minutes of inactivity. The first request may take 30-50 seconds while the server wakes up.
+```
+
 ### Using the App
 
 1. Start the server: `npm run serve`
