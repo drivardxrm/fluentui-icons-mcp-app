@@ -1,6 +1,6 @@
 # Fluent UI Icons - MCP App
 
-An MCP App for exploring and searching **Fluent UI React V9 icons** from `@fluentui/react-icons`.
+An **MCP App** showcasing the new **rich UI capabilities** of the Model Context Protocol. This visual tool lets you explore, search, and discover 5,600+ **Fluent UI React V9 icons** from `@fluentui/react-icons`—all within an interactive React interface rendered directly in your AI agent. Features intelligent multi-layer search with semantic matching, visual tags, and synonym expansion.
 
 <img width="783" height="1075" alt="image" src="https://github.com/user-attachments/assets/4e690a63-3787-49c1-a962-1c508c1bdf25" />
 <br />
