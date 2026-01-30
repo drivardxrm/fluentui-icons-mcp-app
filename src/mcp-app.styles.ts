@@ -362,4 +362,21 @@ export const useAppStyles = makeStyles({
     marginBottom: "8px",
     opacity: 0.5,
   },
+
+  // GitHub header link
+  githubLink: {
+    display: "flex",
+    alignItems: "center",
+    opacity: 0.7,
+    transition: "opacity 0.2s ease",
+    ":hover": {
+      opacity: 1,
+    },
+  },
+
+  githubIcon: {
+    width: "16px",
+    height: "16px",
+    fill: tokens.colorNeutralForeground3,
+  },
 });

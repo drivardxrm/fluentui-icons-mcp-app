@@ -2,7 +2,7 @@
  * @file IconCard component - displays a single icon with size toggles
  */
 import { useCallback, useMemo, useState } from "react";
-import { ToggleButton, Button, Tooltip, Badge, mergeClasses } from "@fluentui/react-components";
+import { ToggleButton, Button, Tooltip, Badge, Tag, mergeClasses } from "@fluentui/react-components";
 import { Code16Regular, DocumentAdd16Regular } from "@fluentui/react-icons";
 import { getIconComponent } from "../icon-registry";
 import { useAppStyles } from "../mcp-app.styles";
@@ -182,7 +182,10 @@ export function IconCard({
               </Button>
             </Tooltip>
           )}
-          <Tooltip content="Copy JSX" relationship="label">
+          <Tooltip 
+            content={<Tag size="extra-small" appearance="outline">{`<${displayIconName} />`}</Tag>} 
+            relationship="label"
+          >
             <Button
               appearance="subtle"
               size="small"
