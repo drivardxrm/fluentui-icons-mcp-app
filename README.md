@@ -32,7 +32,7 @@ Add to your **User Settings** (`settings.json`) or **Workspace Settings** (`.vsc
   "mcp": {
     "servers": {
       "fluentui-icons": {
-        "url": "https://fluentui-icons-mcp.onrender.com/mcp"
+        "url": "https://fluentui-icons-mcp-app.onrender.com/mcp"
       }
     }
   }
