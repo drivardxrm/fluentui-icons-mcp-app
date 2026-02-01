@@ -160,6 +160,7 @@ export function IconCard({
             size="small"
             appearance="tint"
             className={mergeClasses(styles.scoreBadge, scoreBadgeInfo.styleClass)}
+            style={{ cursor: 'default' }}
           >
             {scoreBadgeInfo.score}
           </Badge>

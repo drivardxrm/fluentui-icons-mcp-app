@@ -82,7 +82,7 @@ export function createServer(): McpServer {
         "Returns matching icons with their JSX code and import statements. " +
         "Use natural language like 'add', 'arrow', 'calendar', 'save', 'delete', etc.",
       inputSchema: {
-        query: z.string().describe(
+        query: z.string().max(500).describe(
           "Search query - describe the icon you're looking for (e.g., 'add', 'calendar', 'arrow left', 'save document')"
         ),
         maxResults: z.number().optional().default(20).describe(
