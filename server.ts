@@ -51,7 +51,7 @@ const DIST_DIR = import.meta.filename.endsWith(".ts")
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "Fluent UI Icons MCP App",
-    version: "1.0.0",
+    version: "1.0.1",
   });
 
   // Resource URI for the icon explorer UI
