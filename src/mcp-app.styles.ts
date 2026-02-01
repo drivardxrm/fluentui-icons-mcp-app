@@ -123,7 +123,7 @@ export const useAppStyles = makeStyles({
 
   iconsGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
     ...shorthands.gap("6px"),
   },
 
@@ -188,17 +188,24 @@ export const useAppStyles = makeStyles({
 
   iconCardActionButtons: {
     position: "absolute",
-    top: "2px",
-    right: "2px",
+    top: "1px",
+    right: "1px",
     display: "flex",
-    gap: "0px",
+    gap: "0",
+    justifyContent: "flex-end",
   },
 
   iconCardCopyButton: {
-    fontSize: "9px",
-    minWidth: "18px",
-    height: "18px",
-    ...shorthands.padding("0"),
+    fontSize: "8px",
+    minWidth: "auto",
+    height: "14px",
+    ...shorthands.padding("0", "2px"),
+    ...shorthands.margin("0"),
+    // Reduce gap between icon and text
+    "& .fui-Button__icon": {
+      marginRight: "1px",
+      fontSize: "9px",
+    },
   },
 
   iconPreview: {
@@ -288,8 +295,9 @@ export const useAppStyles = makeStyles({
   },
 
   codeBlock: {
-    backgroundColor: tokens.colorNeutralBackground6,
+    backgroundColor: tokens.colorNeutralBackground3,
     color: tokens.colorNeutralForeground1,
+    ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
     ...shorthands.borderRadius(tokens.borderRadiusMedium),
     ...shorthands.padding("8px", "10px"),
     fontFamily: tokens.fontFamilyMonospace,

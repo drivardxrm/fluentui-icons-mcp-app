@@ -7,7 +7,68 @@ import { getIconComponent } from "../icon-registry";
 import { useAppStyles } from "../mcp-app.styles";
 import { getSizedIconName } from "../utils/iconHelpers";
 import type { IconResult } from "../types/icons";
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
+
+// Helper component to render SVG markup
+function SvgMarkupBlock({ 
+  iconName, 
+  copyToClipboard, 
+  styles 
+}: { 
+  iconName: string; 
+  copyToClipboard: (text: string) => void;
+  styles: ReturnType<typeof useAppStyles>;
+}) {
+  const [svgMarkup, setSvgMarkup] = useState<string>("");
+
+  useEffect(() => {
+    const IconComp = getIconComponent(iconName);
+    if (!IconComp) {
+      setSvgMarkup("<!-- Icon not found -->");
+      return;
+    }
+
+    import('react-dom/server').then(({ renderToStaticMarkup }) => {
+      try {
+        const markup = renderToStaticMarkup(<IconComp />);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(markup, 'image/svg+xml');
+        const svgElement = doc.querySelector('svg');
+        
+        if (svgElement) {
+          svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+          if (!svgElement.getAttribute('width')) {
+            svgElement.setAttribute('width', '24');
+          }
+          if (!svgElement.getAttribute('height')) {
+            svgElement.setAttribute('height', '24');
+          }
+          
+          const svgString = new XMLSerializer().serializeToString(svgElement);
+          setSvgMarkup(svgString);
+        }
+      } catch (err) {
+        console.error('Error generating SVG:', err);
+        setSvgMarkup("<!-- Error generating SVG -->");
+      }
+    });
+  }, [iconName]);
+
+  return (
+    <>
+      <div className={styles.codeLabel}>SVG Markup</div>
+      <div className={styles.codeBlock}>
+        <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{svgMarkup}</code>
+        <button
+          className={styles.copyButton}
+          onClick={() => copyToClipboard(svgMarkup)}
+        >
+          Copy
+        </button>
+      </div>
+    </>
+  );
+}
 
 export interface DetailPanelProps {
   selectedIcon: IconResult;
@@ -127,28 +188,11 @@ export function DetailPanel({
           </button>
         </div>
 
-        <div className={styles.codeLabel}>Usage Example</div>
-        <div className={styles.codeBlock}>
-          <code>{`import { ${selectedIcon.name} } from "@fluentui/react-icons";
-
-function MyComponent() {
-  return (
-    <button>
-      <${selectedIcon.name} /> Click me
-    </button>
-  );
-}`}</code>
-          <button
-            className={styles.copyButton}
-            onClick={() =>
-              copyToClipboard(
-                `import { ${selectedIcon.name} } from "@fluentui/react-icons";\n\nfunction MyComponent() {\n  return (\n    <button>\n      <${selectedIcon.name} /> Click me\n    </button>\n  );\n}`
-              )
-            }
-          >
-            Copy
-          </button>
-        </div>
+        <SvgMarkupBlock 
+          iconName={selectedBaseIcon.name} 
+          copyToClipboard={copyToClipboard} 
+          styles={styles} 
+        />
       </div>
     </>
   );

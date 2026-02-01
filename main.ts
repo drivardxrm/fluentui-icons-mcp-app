@@ -7,6 +7,11 @@ import { createServer } from "./server.js";
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
 const app = express();
+
+// Trust proxy - required when running behind reverse proxies (Render, Heroku, etc.)
+// This allows express-rate-limit to correctly identify users via X-Forwarded-For header
+app.set('trust proxy', 1);
+
 app.use(cors());
 
 // Rate limiting - 100 requests per 15 minutes per IP

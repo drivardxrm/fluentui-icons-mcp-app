@@ -51,7 +51,7 @@ const DIST_DIR = import.meta.filename.endsWith(".ts")
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "Fluent UI Icons MCP App",
-    version: "1.0.0",
+    version: "1.0.1",
   });
 
   // Resource URI for the icon explorer UI
@@ -82,7 +82,7 @@ export function createServer(): McpServer {
         "Returns matching icons with their JSX code and import statements. " +
         "Use natural language like 'add', 'arrow', 'calendar', 'save', 'delete', etc.",
       inputSchema: {
-        query: z.string().describe(
+        query: z.string().max(500).describe(
           "Search query - describe the icon you're looking for (e.g., 'add', 'calendar', 'arrow left', 'save document')"
         ),
         maxResults: z.number().optional().default(20).describe(
