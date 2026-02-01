@@ -1,9 +1,9 @@
 /**
  * @file IconCard component - displays a single icon with size toggles
  */
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
 import { ToggleButton, Button, Tooltip, Badge, Tag, mergeClasses } from "@fluentui/react-components";
-import { Code16Regular, DocumentAdd16Regular } from "@fluentui/react-icons";
+import { Code16Regular, DocumentAdd16Regular, Copy16Regular } from "@fluentui/react-icons";
 import { getIconComponent } from "../icon-registry";
 import { useAppStyles } from "../mcp-app.styles";
 import { getSizedIconName } from "../utils/iconHelpers";
@@ -95,6 +95,58 @@ export function IconCard({
       onAddImport(importStatement);
     }
   }, [displayIconName, onAddImport]);
+
+  // Copy SVG handler - copies the base icon SVG markup to clipboard
+  const handleCopySvg = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Get the base icon component (without size suffix)
+    const baseIconName = icon.name;
+    const IconComp = getIconComponent(baseIconName);
+    
+    if (!IconComp) {
+      console.warn(`Could not find icon component for ${baseIconName}`);
+      return;
+    }
+
+    // Use ReactDOMServer to render the icon to static markup (synchronous)
+    import('react-dom/server').then(({ renderToStaticMarkup }) => {
+      try {
+        // Render icon to SVG string
+        const svgMarkup = renderToStaticMarkup(<IconComp />);
+        
+        // Parse to add xmlns if needed
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgMarkup, 'image/svg+xml');
+        const svgElement = doc.querySelector('svg');
+        
+        if (svgElement) {
+          // Ensure proper SVG attributes for standalone file
+          svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+          if (!svgElement.getAttribute('width')) {
+            svgElement.setAttribute('width', '24');
+          }
+          if (!svgElement.getAttribute('height')) {
+            svgElement.setAttribute('height', '24');
+          }
+          
+          // Convert to string and copy to clipboard
+          const svgString = new XMLSerializer().serializeToString(svgElement);
+          navigator.clipboard.writeText(svgString).then(() => {
+            console.log('SVG copied to clipboard');
+          }).catch((err) => {
+            console.error('Failed to copy SVG:', err);
+          });
+        } else {
+          console.error('Failed to parse SVG element');
+        }
+      } catch (err) {
+        console.error('Error generating SVG:', err);
+      }
+    }).catch((err) => {
+      console.error('Failed to load react-dom/server:', err);
+    });
+  }, [icon.name]);
 
   // Get score badge info with breakdown tooltip
   const scoreBadgeInfo = useMemo(() => {
@@ -195,6 +247,17 @@ export function IconCard({
               className={styles.iconCardCopyButton}
             >
               Copy
+            </Button>
+          </Tooltip>
+          <Tooltip content="Copy SVG markup" relationship="label">
+            <Button
+              appearance="subtle"
+              size="small"
+              icon={<Copy16Regular />}
+              onClick={handleCopySvg}
+              className={styles.iconCardCopyButton}
+            >
+              SVG
             </Button>
           </Tooltip>
         </div>
